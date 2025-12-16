@@ -9,6 +9,48 @@ spring:
         healthCheckInterval: 60s
         preferIpAddress: false
 
+    gateway:
+      routes:
+        - id: auth_api_route
+          uri: lb://jbh-iam-service
+          predicates:
+            - Path=/jbh-api/auth/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@inMemoryRateLimiter}"
+                key-resolver: "#{@ipKeyResolver}"
+
+        - id: users_api_route
+          uri: lb://jbh-iam-service
+          predicates:
+            - Path=/jbh-api/users/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@inMemoryRateLimiter}"
+                key-resolver: "#{@ipKeyResolver}"
+
+        - id: accounts_api_route
+          uri: lb://jbh-accounts-service
+          predicates:
+            - Path=/jbh-api/accounts/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@inMemoryRateLimiter}"
+                key-resolver: "#{@ipKeyResolver}"
+
+        - id: notifications_api_route
+          uri: lb://jbh-notifications-service
+          predicates:
+            - Path=/jbh-api/notifications/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@inMemoryRateLimiter}"
+                key-resolver: "#{@ipKeyResolver}"
+
   application:
     name: jbh-gateway
 

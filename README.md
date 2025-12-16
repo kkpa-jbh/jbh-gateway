@@ -147,3 +147,16 @@ src/
 ## License
 
 [License information to be added]
+
+✅ What Works Now
+
+In-Memory Rate Limiting:
+- 10 requests per second per IP address
+- 1-second sliding window with automatic cleanup
+- No Redis dependency - completely self-contained
+- Caffeine cache for high-performance in-memory storage
+
+Authorization Header Validation:
+- Global filter validates Bearer tokens
+- Protected routes: /jbh-api/users/**, /jbh-api/accounts/**, /jbh-api/notifications/**
+- Public routes: /jbh-api/auth/** (no token required)
