@@ -8,6 +8,7 @@ spring:
         healthCheckPath: /actuator/health
         healthCheckInterval: 60s
         preferIpAddress: false
+        service-name: API Gateway
 
     gateway:
       routes:
@@ -31,10 +32,10 @@ spring:
                 rate-limiter: "#{@inMemoryRateLimiter}"
                 key-resolver: "#{@ipKeyResolver}"
 
-        - id: accounts_api_route
-          uri: lb://jbh-accounts-service
+        - id: personal_finance_api_route
+          uri: lb://jbh-personal-finance
           predicates:
-            - Path=/jbh-api/accounts/**
+            - Path=/jbh-api/accounts/**,/jbh-api/products/**
           filters:
             - name: RequestRateLimiter
               args:
@@ -42,7 +43,7 @@ spring:
                 key-resolver: "#{@ipKeyResolver}"
 
         - id: notifications_api_route
-          uri: lb://jbh-notifications-service
+          uri: lb://jbh-personal-finance
           predicates:
             - Path=/jbh-api/notifications/**
           filters:
@@ -62,4 +63,14 @@ management:
     web:
       exposure:
         include: health,info,metrics,gateway
+
+jwt:
+  secret: ${JWT_SECRET:p7YH4n3B6GZC6FvJBHm9a0YzqkXyZP8vJBH1F0sYB7Q=}
+  token-type-claim: token_type
+  access-token-type: ACCESS
+
+
+logging:
+    level:
+      com.kkpa.jbh_gateway.filter: DEBUG
 

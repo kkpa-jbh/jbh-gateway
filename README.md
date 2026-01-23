@@ -148,15 +148,76 @@ src/
 
 [License information to be added]
 
-✅ What Works Now
+## Authentication & Authorization
 
-In-Memory Rate Limiting:
+### Route Protection
+
+**Protected Routes** (require valid JWT token):
+- `/jbh-api/users/**`
+- `/jbh-api/products/**`
+- `/jbh-api/notifications/**`
+
+**Public Routes** (no token required):
+- `/jbh-api/auth/**`
+
+### Token Extraction
+
+The gateway extracts JWT tokens from multiple sources (in order of precedence):
+1. **Authorization Header**: `Authorization: Bearer <token>`
+2. **Local Cookie**: `JBH_TOKEN` (development)
+3. **Secure Cookie**: `__Secure-JBH_TOKEN` (production)
+
+### JWT Token Validation
+
+The gateway validates:
+- ✅ Token signature (HS512 algorithm)
+- ✅ Token expiration (`exp` claim)
+- ✅ Token type must be `ACCESS`
+- ✅ Subject (`sub`) contains user ID
+
+### Gateway Response Scenarios
+
+| Scenario | HTTP Status | Response Body |
+|----------|-------------|---------------|
+| **Valid Token** | `200` (or backend response) | Backend service response |
+| **Missing Token** | `401 Unauthorized` | `{"error_code": "AUTH_MISSING_TOKEN", "message": "Authorization token is required", "timestamp": 1734357890123}` |
+| **Expired Token** | `401 Unauthorized` | `{"error_code": "AUTH_TOKEN_EXPIRED", "message": "Access token has expired", "timestamp": 1734357890123}` |
+| **Invalid Signature** | `401 Unauthorized` | `{"error_code": "AUTH_SI", "message": "SI  failed", "timestamp": 1734357890123}` |
+| **Wrong Token Type** | `401 Unauthorized` | `{"error_code": "AUTH_INVALID_TT", "message": "Invalid TT", "timestamp": 1734357890123}` |
+| **Malformed Token** | `401 Unauthorized` | `{"error_code": "AUTH_INVALID_TOKEN", "message": "Invalid or malformed token", "timestamp": 1734357890123}` |
+| **Public Route** | `200` (or backend response) | No token validation - passes through |
+
+### Example Requests
+
+**Successful request with Authorization header:**
+```bash
+curl -H "Authorization: Bearer eyJhbGc..." http://localhost:8080/jbh-api/users/profile
+# Response: 200 OK with user profile data
+```
+
+**Successful request with cookies (browser):**
+```bash
+curl -b "JBH_TOKEN=eyJhbGc..." http://localhost:8080/jbh-api/products/123
+# Response: 200 OK with account data
+```
+
+**Failed request - expired token:**
+```bash
+curl -H "Authorization: Bearer <expired-token>" http://localhost:8080/jbh-api/users/profile
+# Response: 401 Unauthorized
+# Body: {"error_code": "AUTH_TOKEN_EXPIRED", "message": "Access token has expired", "timestamp": 1734357890123}
+```
+
+**Public endpoint - no token needed:**
+```bash
+curl http://localhost:8080/jbh-api/auth/login
+# Response: 200 OK - no token validation
+```
+
+## Features
+
+### In-Memory Rate Limiting
 - 10 requests per second per IP address
 - 1-second sliding window with automatic cleanup
 - No Redis dependency - completely self-contained
 - Caffeine cache for high-performance in-memory storage
-
-Authorization Header Validation:
-- Global filter validates Bearer tokens
-- Protected routes: /jbh-api/users/**, /jbh-api/accounts/**, /jbh-api/notifications/**
-- Public routes: /jbh-api/auth/** (no token required)
