@@ -30,7 +30,7 @@ class AuthorizationGlobalFilter(
         private const val SECURE_COOKIE_NAME = "__Secure-JBH_TOKEN"
     }
 
-    private val protectedPaths = listOf("/jbh-api/users", "/jbh-api/products", "/jbh-api/notifications")
+    private val publicPaths = listOf("/jbh-api/auth/")
 
     override fun filter(exchange: ServerWebExchange, chain: GatewayFilterChain): Mono<Void> {
         val request = exchange.request
@@ -38,11 +38,11 @@ class AuthorizationGlobalFilter(
         val method = request.method
         val clientIp = request.remoteAddress?.address?.hostAddress ?: "unknown"
 
-        val requiresAuth = protectedPaths.any { path.startsWith(it) }
+        val isPublicJBHAPI = publicPaths.any { path.startsWith(it) }
 
-        LOG.debugf("Incoming request: method=%s, path=%s, clientIp=%s, requiresAuth=%s", method, path, clientIp, requiresAuth)
+        LOG.debugf("Incoming request: method=%s, path=%s, clientIp=%s, requiresAuth=%s", method, path, clientIp, !isPublicJBHAPI)
 
-        if (!requiresAuth) {
+        if (isPublicJBHAPI) {
             LOG.debugf("Public route accessed: %s %s", method, path)
             return chain.filter(exchange)
         }

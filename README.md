@@ -10,7 +10,7 @@ JBH Gateway serves as the entry point for client requests in a microservices eco
 
 - **Reactive Architecture**: Built on Spring WebFlux and Project Reactor for high-performance, non-blocking request handling
 - **Dynamic Routing**: Flexible request routing based on path, headers, query parameters, and more
-- **Circuit Breaker**: Resilience4J integration for fault tolerance and cascading failure prevention
+- **Circuit Breaker**: Resilience4J dependency is included (not configured on any route yet)
 - **Load Balancing**: Distribute requests across multiple service instances
 - **Request/Response Filtering**: Pre and post-processing of requests and responses
 - **Metrics & Monitoring**: Built-in observability for gateway performance tracking
@@ -78,37 +78,33 @@ docker run --rm -p 8080:8080 jbh-gateway:0.0.1-SNAPSHOT
 
 ## Configuration
 
-Gateway routes and filters are configured in `application.properties` or `application.yml`. Example configuration:
+Routes, Consul and JWT settings live in `src/main/resources/application.yml`.
+Services are found in Consul by name with the `lb://` scheme.
 
-```yaml
-spring:
-  cloud:
-    gateway:
-      routes:
-        - id: user-service
-          uri: http://localhost:8081
-          predicates:
-            - Path=/api/users/**
-          filters:
-            - StripPrefix=2
-            - name: CircuitBreaker
-              args:
-                name: user-service
-                fallbackUri: forward:/fallback/users
-```
+| Path | Target (Consul name) |
+|------|----------------------|
+| `/jbh-api/auth/**` | `lb://jbh-iam-service` (public) |
+| `/jbh-api/users/**`, `/jbh-api/user-groups/**` | `lb://jbh-iam-service` |
+| `/jbh-api/finance/**`, `/jbh-api/products/**`, `/jbh-api/preferences/**` | `lb://jbh-personal-finance` |
+| `/jbh-api/notifications/**` | `lb://jbh-personal-finance` |
+
+Every route uses the `RequestRateLimiter` filter (`inMemoryRateLimiter` + `ipKeyResolver`).
+
+Main settings:
+- `server.port`: env `JBH_GATEWAY_SERVER_PORT` (default 8080). If you change it, also set `JBH_GATEWAY_URL` in `jbh-iam` and `jbh-personal-finance`.
+- `spring.cloud.consul.host` / `port`: `localhost:8500`
+- `jwt.secret` (env `JWT_SECRET`): must be the same value as in `jbh-iam`
+
+Note: the Resilience4J dependency is present, but no route uses a `CircuitBreaker` filter yet.
 
 ## Architecture
 
 ```
-Client → JBH Gateway → [Service A, Service B, Service C, ...]
+jbh-app → JBH Gateway (:8080) → jbh-iam (:9999)
+                              → jbh-personal-finance (:7777)
 ```
 
-The gateway acts as a reverse proxy, routing requests to backend services based on configured rules while providing:
-
-- **Security**: Authentication and authorization
-- **Reliability**: Circuit breakers and retry mechanisms  
-- **Performance**: Caching and rate limiting
-- **Observability**: Logging, metrics, and tracing
+See the `README.md` in the parent folder for the full system map.
 
 ## Development
 
@@ -118,9 +114,15 @@ The gateway acts as a reverse proxy, routing requests to backend services based 
 src/
 ├── main/
 │   ├── kotlin/com/kkpa/jbh_gateway/
-│   │   └── JbhGatewayApplication.kt
+│   │   ├── JbhGatewayApplication.kt
+│   │   ├── config/JwtProperties.kt          # jwt.* properties
+│   │   ├── config/RateLimitConfig.kt        # IP key resolver + in-memory rate limiter
+│   │   ├── filter/AuthorizationHeaderFilter.kt  # class AuthorizationGlobalFilter
+│   │   ├── model/AuthErrorCode.kt           # 401 error codes
+│   │   ├── model/AuthErrorResponse.kt       # 401 JSON body
+│   │   └── service/JwtValidator.kt          # JWT validation
 │   └── resources/
-│       └── application.properties
+│       └── application.yml
 └── test/
     └── kotlin/com/kkpa/jbh_gateway/
         └── JbhGatewayApplicationTests.kt
@@ -152,13 +154,10 @@ src/
 
 ### Route Protection
 
-**Protected Routes** (require valid JWT token):
-- `/jbh-api/users/**`
-- `/jbh-api/products/**`
-- `/jbh-api/notifications/**`
-
-**Public Routes** (no token required):
+**Public Routes** (no token required) - the `publicPaths` list in `AuthorizationGlobalFilter`:
 - `/jbh-api/auth/**`
+
+**Protected Routes**: every other path. New routes are protected by default.
 
 ### Token Extraction
 
@@ -218,6 +217,8 @@ curl http://localhost:8080/jbh-api/auth/login
 
 ### In-Memory Rate Limiting
 - 10 requests per second per IP address
+- Behind a proxy: the client IP comes from `X-Real-IP`, trusted only when the caller is loopback (`127.0.0.1` / `::1`)
+- **Planned change:** production uses Caddy in Docker (not loopback). The trust check must move to a configurable trusted proxy range.
 - 1-second sliding window with automatic cleanup
 - No Redis dependency - completely self-contained
 - Caffeine cache for high-performance in-memory storage

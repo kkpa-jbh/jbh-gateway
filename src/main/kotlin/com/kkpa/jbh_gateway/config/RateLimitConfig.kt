@@ -7,6 +7,7 @@ import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import org.springframework.cloud.gateway.filter.ratelimit.RateLimiter
 import org.springframework.cloud.gateway.filter.ratelimit.RateLimiter.Response
+import org.springframework.http.server.reactive.ServerHttpRequest
 import reactor.core.publisher.Mono
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicInteger
@@ -14,13 +15,28 @@ import java.util.concurrent.atomic.AtomicInteger
 @Configuration
 class RateLimitConfig {
 
+    companion object {
+        // Set by Nginx: proxy_set_header X-Real-IP $remote_addr;
+        private const val REAL_IP_HEADER = "X-Real-IP"
+    }
+
     @Bean
     fun ipKeyResolver(): KeyResolver {
-        return KeyResolver { exchange ->
-            Mono.just(
-                exchange.request.remoteAddress?.address?.hostAddress ?: "unknown"
-            )
+        return KeyResolver { exchange -> Mono.just(resolveClientIp(exchange.request)) }
+    }
+
+    /**
+     * Behind Nginx every request comes from 127.0.0.1, so the real client IP is read from X-Real-IP.
+     * The header is trusted only when the direct caller is a loopback address (Nginx on the same host).
+     * Otherwise a client could send a fake X-Real-IP to get around the limit.
+     */
+    private fun resolveClientIp(request: ServerHttpRequest): String {
+        val remoteAddress = request.remoteAddress?.address ?: return "unknown"
+        val realIp = request.headers.getFirst(REAL_IP_HEADER)?.trim()
+        if (remoteAddress.isLoopbackAddress && !realIp.isNullOrEmpty()) {
+            return realIp
         }
+        return remoteAddress.hostAddress
     }
 
     @Bean
