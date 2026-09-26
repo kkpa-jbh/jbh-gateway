@@ -36,6 +36,16 @@ jobs:
         with:
           context: .
           push: true
+          # One version per push. Build attestations would add untagged versions that fill the keep-5 window.
+          provenance: false
           tags: |
             ghcr.io/kkpa-jbh/jbh-gateway:${{ github.sha }}
             ghcr.io/kkpa-jbh/jbh-gateway:latest
+
+      # GitHub Free: 500 MB for private packages. Keep the 5 newest images; that is the rollback window.
+      - name: Delete old images
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: jbh-gateway
+          package-type: container
+          min-versions-to-keep: 5
