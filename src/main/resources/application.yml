@@ -1,13 +1,15 @@
 spring:
   cloud:
     consul:
-      host: localhost
-      port: 8500
+      host: ${CONSUL_HOST:localhost}
+      port: ${CONSUL_PORT:8500}
       discovery:
         instanceId: ${spring.application.name}:${random.value}
         healthCheckPath: /actuator/health
         healthCheckInterval: 60s
         preferIpAddress: false
+        # Name registered in Consul. In Docker it must be the compose service name (jbh-gateway).
+        hostname: ${CONSUL_DISCOVERY_HOSTNAME:localhost}
         service-name: API Gateway
 
     gateway:
@@ -63,6 +65,11 @@ management:
     web:
       exposure:
         include: health,info,metrics,gateway
+
+jbh:
+  rate-limit:
+    # Comma-separated CIDRs allowed to set X-Forwarded-For (production: the Docker network "edge").
+    trusted-proxies: ${JBH_TRUSTED_PROXIES:}
 
 jwt:
   secret: ${JWT_SECRET:p7YH4n3B6GZC6FvJBHm9a0YzqkXyZP8vJBH1F0sYB7Q=}

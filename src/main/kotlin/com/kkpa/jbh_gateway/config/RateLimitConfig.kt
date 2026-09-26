@@ -5,43 +5,114 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
+import org.jboss.logging.Logger
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.gateway.filter.ratelimit.RateLimiter
 import org.springframework.cloud.gateway.filter.ratelimit.RateLimiter.Response
 import org.springframework.http.server.reactive.ServerHttpRequest
 import reactor.core.publisher.Mono
+import java.net.InetAddress
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicInteger
 
+/**
+ * Rate limit key = the real client IP.
+ *
+ * In production, Magus's Caddy calls the gateway from the Docker network `edge`, not from loopback.
+ * So every request arrives from the Caddy container IP. The real client IP is in `X-Forwarded-For`.
+ * Caddy replaces any `X-Forwarded-For` the client sends, so the last entry is the real client.
+ *
+ * The header is trusted only when the direct caller is loopback or inside `jbh.rate-limit.trusted-proxies`
+ * (env `JBH_TRUSTED_PROXIES`, comma-separated CIDRs, e.g. the `edge` subnet). From anyone else the header
+ * is ignored, so a client cannot fake it to get around the limit.
+ */
 @Configuration
-class RateLimitConfig {
+class RateLimitConfig(
+    @Value("\${jbh.rate-limit.trusted-proxies:}") trustedProxies: String
+) {
 
     companion object {
-        // Set by Nginx: proxy_set_header X-Real-IP $remote_addr;
-        private const val REAL_IP_HEADER = "X-Real-IP"
+        private val LOG: Logger = Logger.getLogger(RateLimitConfig::class.java)
+        private const val FORWARDED_FOR_HEADER = "X-Forwarded-For"
     }
+
+    private val trustedNetworks: List<IpNetwork> = trustedProxies.split(",")
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+        .mapNotNull { cidr ->
+            IpNetwork.parse(cidr) ?: run {
+                LOG.warnf("Ignoring invalid trusted proxy CIDR: %s", cidr)
+                null
+            }
+        }
 
     @Bean
     fun ipKeyResolver(): KeyResolver {
         return KeyResolver { exchange -> Mono.just(resolveClientIp(exchange.request)) }
     }
 
-    /**
-     * Behind Nginx every request comes from 127.0.0.1, so the real client IP is read from X-Real-IP.
-     * The header is trusted only when the direct caller is a loopback address (Nginx on the same host).
-     * Otherwise a client could send a fake X-Real-IP to get around the limit.
-     */
     private fun resolveClientIp(request: ServerHttpRequest): String {
         val remoteAddress = request.remoteAddress?.address ?: return "unknown"
-        val realIp = request.headers.getFirst(REAL_IP_HEADER)?.trim()
-        if (remoteAddress.isLoopbackAddress && !realIp.isNullOrEmpty()) {
-            return realIp
+        if (!isTrustedProxy(remoteAddress)) {
+            return remoteAddress.hostAddress
         }
-        return remoteAddress.hostAddress
+        val lastForwardedFor = request.headers.getFirst(FORWARDED_FOR_HEADER)
+            ?.split(",")
+            ?.map { it.trim() }
+            ?.lastOrNull { it.isNotEmpty() }
+        return lastForwardedFor ?: remoteAddress.hostAddress
     }
+
+    private fun isTrustedProxy(address: InetAddress): Boolean =
+        address.isLoopbackAddress || trustedNetworks.any { it.contains(address) }
 
     @Bean
     fun inMemoryRateLimiter(): RateLimiter<InMemoryRateLimiter.Config> {
         return InMemoryRateLimiter()
+    }
+}
+
+/** A CIDR range such as `10.231.0.0/24`. IPv4 and IPv6 never match each other. */
+private class IpNetwork(private val network: ByteArray, private val prefixLength: Int) {
+
+    fun contains(address: InetAddress): Boolean {
+        val candidate = address.address
+        if (candidate.size != network.size) {
+            return false
+        }
+        val fullBytes = prefixLength / 8
+        for (i in 0 until fullBytes) {
+            if (candidate[i] != network[i]) {
+                return false
+            }
+        }
+        val remainingBits = prefixLength % 8
+        if (remainingBits == 0) {
+            return true
+        }
+        val mask = (0xFF shl (8 - remainingBits)) and 0xFF
+        return (candidate[fullBytes].toInt() and mask) == (network[fullBytes].toInt() and mask)
+    }
+
+    companion object {
+        /** Returns null for anything that is not a literal IP with a valid prefix (no DNS lookup). */
+        fun parse(cidr: String): IpNetwork? {
+            val parts = cidr.split("/")
+            if (parts.size != 2) {
+                return null
+            }
+            val ip = parts[0]
+            val isIpLiteral = ip.contains(':') || ip.matches(Regex("""\d{1,3}(\.\d{1,3}){3}"""))
+            if (!isIpLiteral) {
+                return null
+            }
+            val bytes = runCatching { InetAddress.getByName(ip).address }.getOrNull() ?: return null
+            val prefix = parts[1].toIntOrNull() ?: return null
+            if (prefix < 0 || prefix > bytes.size * 8) {
+                return null
+            }
+            return IpNetwork(bytes, prefix)
+        }
     }
 }
 

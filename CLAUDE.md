@@ -26,10 +26,8 @@ It serves as the entry point for microservices, providing routing, rate limiting
 ```
 
 **Docker:**
-```bash
-./gradlew bootBuildImage       # Build container image
-docker run --rm -p 8080:8080 jbh-gateway:0.0.1-SNAPSHOT
-```
+- `Dockerfile` copies the Boot jar that CI builds (`./gradlew bootJar`). `.github/workflows/image.yml` pushes
+  `ghcr.io/kkpa-jbh/jbh-gateway:<git-sha>`. The deploy lives in the `jbh-deploy` repo.
 
 **GraalVM native compilation:**
 ```bash
@@ -66,12 +64,13 @@ The gateway routes requests to backend microservices via Consul service discover
 - Caffeine cache with 1-minute expiration
 - No Redis dependency
 - Applied to all routes via `RequestRateLimiter` filter
-- IP-based keying via `ipKeyResolver`. Behind a proxy it reads `X-Real-IP`, but only when the direct caller is a loopback address (Nginx on the same host). Otherwise it uses the remote address, so clients cannot fake the header. **Planned change:** production uses Caddy in Docker, which is not loopback, so the trust check must move to a configurable trusted proxy range.
+- IP-based keying via `ipKeyResolver`. It reads the last entry of `X-Forwarded-For`, but only when the direct caller is loopback or inside `jbh.rate-limit.trusted-proxies` (env `JBH_TRUSTED_PROXIES`, comma-separated CIDRs; production: the `edge` subnet `10.231.0.0/24`, where Magus's Caddy lives). Otherwise it uses the remote address, so clients cannot fake the header.
 
 ### Service Discovery
 
 Consul integration:
-- Host: `localhost:8500`
+- Host: env `CONSUL_HOST` (default `localhost`), port `CONSUL_PORT` (default 8500)
+- Registered hostname: env `CONSUL_DISCOVERY_HOSTNAME` (default `localhost`; Docker: `jbh-gateway`)
 - Health check: `/actuator/health` every 60s
 - Instance ID includes random value for uniqueness
 
