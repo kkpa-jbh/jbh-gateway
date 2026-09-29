@@ -128,7 +128,9 @@ private class IpNetwork(private val network: ByteArray, private val prefixLength
 /** Fixed-window counter per key (client IP): at most [maxRequests] in each window of [windowMillis]. */
 class InMemoryRateLimiter(
     private val maxRequests: Int,
-    private val windowMillis: Long
+    private val windowMillis: Long,
+    // Tests pass a fake clock, so the window is deterministic.
+    private val clock: () -> Long = System::currentTimeMillis
 ) : RateLimiter<InMemoryRateLimiter.Config> {
 
     // Entries live a bit longer than one window, so an idle IP starts fresh.
@@ -138,7 +140,7 @@ class InMemoryRateLimiter(
 
     override fun isAllowed(routeId: String, id: String): Mono<Response> {
         val windowData = cache.get(id) { WindowData() }
-        val windowStart = System.currentTimeMillis() / windowMillis * windowMillis
+        val windowStart = clock() / windowMillis * windowMillis
 
         // Reset and count together, so two parallel requests cannot both reset the window.
         val currentCount = synchronized(windowData) {
