@@ -21,10 +21,8 @@ class AuthorizationGlobalFilter(
     private val objectMapper: ObjectMapper
 ) : GlobalFilter, Ordered {
 
-    private
-    val LOG: Logger = Logger.getLogger(AuthorizationGlobalFilter.javaClass)
-
     companion object {
+        private val LOG: Logger = Logger.getLogger(AuthorizationGlobalFilter::class.java)
         const val USER_ID_ATTRIBUTE = "userId"
         private const val LOCAL_COOKIE_NAME = "JBH_TOKEN"
         private const val SECURE_COOKIE_NAME = "__Secure-JBH_TOKEN"
@@ -57,7 +55,7 @@ class AuthorizationGlobalFilter(
         return when (val result = jwtValidator.validateToken(token)) {
             is JwtValidator.ValidationResult.Valid -> {
                 exchange.attributes[USER_ID_ATTRIBUTE] = result.userId
-                LOG.infof("Authorized request: %s %s, userId=%s, clientIp=%s", method, path, result.userId, clientIp)
+                LOG.debugf("Authorized request: %s %s, userId=%s, clientIp=%s", method, path, result.userId, clientIp)
                 chain.filter(exchange)
             }
             is JwtValidator.ValidationResult.Invalid -> {

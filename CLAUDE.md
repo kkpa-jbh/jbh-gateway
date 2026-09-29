@@ -52,18 +52,18 @@ The gateway routes requests to backend microservices via Consul service discover
 **Authorization is handled by a GlobalFilter** (class `AuthorizationGlobalFilter` in `filter/AuthorizationHeaderFilter.kt`, order -1):
 - Public paths: only `/jbh-api/auth/**` (the `publicPaths` list). **Every other path is protected by default.**
 - Token is read in this order: `Authorization: Bearer <token>` header, then cookie `JBH_TOKEN` (local), then cookie `__Secure-JBH_TOKEN` (prod).
-- `JwtValidator` checks the signature (shared `jwt.secret` / env `JWT_SECRET`, same as `jbh-iam`), expiration, the `token_type` claim (`ACCESS`), and a non-blank `sub` (user id).
+- `JwtValidator` checks the signature (shared `jwt.secret` / env `JWT_SECRET`, required, no default, Base64, same as `jbh-iam`; key = `Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret))`, HS256), expiration, the `token_type` claim (`ACCESS`), and a non-blank `sub` (user id).
 - On success, the user id is stored in the exchange attribute `userId`.
 - On failure, it returns `401` with a JSON body (`error_code`, `message`) from `AuthErrorCode`.
 
 ### Rate Limiting
 
 **Custom in-memory rate limiter** (`InMemoryRateLimiter`):
-- 10 requests per second per IP address
-- 1-second sliding window with atomic counters
-- Caffeine cache with 1-minute expiration
+- `InMemoryRateLimiter(maxRequests, windowMillis)`: fixed window per IP, count and reset inside `synchronized`
+- Bean `inMemoryRateLimiter` (`@Primary`, the default): 10 requests per second. Used by all routes
+- Bean `authRateLimiter`: 10 requests per minute. Used by route `auth_login_route` (`/jbh-api/auth/signin`, `/signup`, `/google`), declared before `auth_api_route` because the first matching route wins
+- Caffeine cache, entries expire after 2 idle windows
 - No Redis dependency
-- Applied to all routes via `RequestRateLimiter` filter
 - IP-based keying via `ipKeyResolver`. It reads the last entry of `X-Forwarded-For`, but only when the direct caller is loopback or inside `jbh.rate-limit.trusted-proxies` (env `JBH_TRUSTED_PROXIES`, comma-separated CIDRs; production: the `edge` subnet `10.231.0.0/24`, where Magus's Caddy lives). Otherwise it uses the remote address, so clients cannot fake the header.
 
 ### Service Discovery
@@ -98,7 +98,7 @@ Consul integration:
 4. New routes are protected by default. Add the path to `publicPaths` in `AuthorizationGlobalFilter` only if it must be public
 
 **Actuator Endpoints:**
-Available at `/actuator/`: `health`, `info`, `metrics`, `gateway`
+Available at `/actuator/`: `health`, `info` only
 
 ## System map sync (`../jbh-deploy/README.md`)
 

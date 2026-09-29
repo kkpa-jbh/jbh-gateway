@@ -14,6 +14,17 @@ spring:
 
     gateway:
       routes:
+        # Before auth_api_route: the first matching route wins. Stricter limit against password guessing.
+        - id: auth_login_route
+          uri: lb://jbh-iam-service
+          predicates:
+            - Path=/jbh-api/auth/signin,/jbh-api/auth/signup,/jbh-api/auth/google
+          filters:
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@authRateLimiter}"
+                key-resolver: "#{@ipKeyResolver}"
+
         - id: auth_api_route
           uri: lb://jbh-iam-service
           predicates:
@@ -64,7 +75,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,gateway
+        include: health,info
 
 jbh:
   rate-limit:
@@ -72,12 +83,9 @@ jbh:
     trusted-proxies: ${JBH_TRUSTED_PROXIES:}
 
 jwt:
-  secret: ${JWT_SECRET:p7YH4n3B6GZC6FvJBHm9a0YzqkXyZP8vJBH1F0sYB7Q=}
+  # Required, no default: Base64, at least 32 bytes. Same value as jbh-iam.
+  secret: ${JWT_SECRET}
   token-type-claim: token_type
   access-token-type: ACCESS
 
-
-logging:
-    level:
-      com.kkpa.jbh_gateway.filter: DEBUG
 

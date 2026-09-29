@@ -3,6 +3,7 @@ package com.kkpa.jbh_gateway.config
 import org.springframework.cloud.gateway.filter.ratelimit.KeyResolver
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Primary
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import org.jboss.logging.Logger
@@ -13,7 +14,6 @@ import org.springframework.http.server.reactive.ServerHttpRequest
 import reactor.core.publisher.Mono
 import java.net.InetAddress
 import java.time.Duration
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Rate limit key = the real client IP.
@@ -66,9 +66,17 @@ class RateLimitConfig(
     private fun isTrustedProxy(address: InetAddress): Boolean =
         address.isLoopbackAddress || trustedNetworks.any { it.contains(address) }
 
+    /** Default for all routes: 10 requests per second per IP. @Primary: the gateway autowires one default limiter. */
     @Bean
+    @Primary
     fun inMemoryRateLimiter(): RateLimiter<InMemoryRateLimiter.Config> {
-        return InMemoryRateLimiter()
+        return InMemoryRateLimiter(maxRequests = 10, windowMillis = 1_000)
+    }
+
+    /** Sign-in, sign-up and Google sign-in: 10 requests per minute per IP, against password guessing. */
+    @Bean
+    fun authRateLimiter(): RateLimiter<InMemoryRateLimiter.Config> {
+        return InMemoryRateLimiter(maxRequests = 10, windowMillis = 60_000)
     }
 }
 
@@ -116,39 +124,43 @@ private class IpNetwork(private val network: ByteArray, private val prefixLength
     }
 }
 
-class InMemoryRateLimiter : RateLimiter<InMemoryRateLimiter.Config> {
-    
+/** Fixed-window counter per key (client IP): at most [maxRequests] in each window of [windowMillis]. */
+class InMemoryRateLimiter(
+    private val maxRequests: Int,
+    private val windowMillis: Long
+) : RateLimiter<InMemoryRateLimiter.Config> {
+
+    // Entries live a bit longer than one window, so an idle IP starts fresh.
     private val cache: Cache<String, WindowData> = Caffeine.newBuilder()
-        .expireAfterWrite(Duration.ofMinutes(1))
+        .expireAfterAccess(Duration.ofMillis(windowMillis * 2))
         .build()
-    
+
     override fun isAllowed(routeId: String, id: String): Mono<Response> {
         val windowData = cache.get(id) { WindowData() }
-        
-        val currentTime = System.currentTimeMillis()
-        val windowStart = currentTime / 1000 * 1000 // 1-second window
-        
-        if (windowData.windowStart != windowStart) {
-            windowData.windowStart = windowStart
-            windowData.requestCount.set(0)
+        val windowStart = System.currentTimeMillis() / windowMillis * windowMillis
+
+        // Reset and count together, so two parallel requests cannot both reset the window.
+        val currentCount = synchronized(windowData) {
+            if (windowData.windowStart != windowStart) {
+                windowData.windowStart = windowStart
+                windowData.requestCount = 0
+            }
+            ++windowData.requestCount
         }
-        
-        val currentCount = windowData.requestCount.incrementAndGet()
-        val allowed = currentCount <= 10 // 10 requests per second
-        
-        return Mono.just(Response(allowed, emptyMap()))
+
+        return Mono.just(Response(currentCount <= maxRequests, emptyMap()))
     }
-    
+
     override fun getConfig(): Map<String, Config> = emptyMap()
-    
+
     override fun getConfigClass(): Class<Config> = Config::class.java
-    
+
     override fun newConfig(): Config = Config()
-    
+
     data class Config(val dummy: String = "")
-    
-    private data class WindowData(
+
+    private class WindowData(
         var windowStart: Long = 0,
-        val requestCount: AtomicInteger = AtomicInteger(0)
+        var requestCount: Int = 0
     )
 }

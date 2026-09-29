@@ -95,7 +95,7 @@ Main settings:
 - `spring.cloud.consul.host` / `port`: env `CONSUL_HOST` / `CONSUL_PORT` (default `localhost:8500`)
 - `spring.cloud.consul.discovery.hostname`: env `CONSUL_DISCOVERY_HOSTNAME` (default `localhost`; Docker: `jbh-gateway`)
 - `jbh.rate-limit.trusted-proxies`: env `JBH_TRUSTED_PROXIES` (default empty: only loopback is trusted)
-- `jwt.secret` (env `JWT_SECRET`): must be the same value as in `jbh-iam`
+- `jwt.secret` (env `JWT_SECRET`): **required**, no default (Base64, at least 32 bytes). The gateway stops at start without it. Must be the same value as in `jbh-iam`
 
 Note: the Resilience4J dependency is present, but no route uses a `CircuitBreaker` filter yet.
 
@@ -218,10 +218,12 @@ curl http://localhost:8080/jbh-api/auth/login
 ## Features
 
 ### In-Memory Rate Limiting
-- 10 requests per second per IP address
+- 10 requests per second per IP address (bean `inMemoryRateLimiter`, the default)
+- 10 requests per minute per IP on `/jbh-api/auth/signin`, `/signup` and `/google` (bean `authRateLimiter`, route `auth_login_route`), against password guessing
+- Over the limit: `429 Too Many Requests`
 - Behind a proxy: the client IP is the last entry of `X-Forwarded-For`. It is trusted only when the caller is loopback
   or inside `JBH_TRUSTED_PROXIES` (comma-separated CIDRs). Production sets the `edge` Docker subnet `10.231.0.0/24`,
   where Magus's Caddy runs. Caddy replaces any `X-Forwarded-For` the client sends.
-- 1-second sliding window with automatic cleanup
+- Fixed window per IP with automatic cleanup
 - No Redis dependency - completely self-contained
 - Caffeine cache for high-performance in-memory storage
