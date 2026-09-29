@@ -1,9 +1,9 @@
 plugins {
 	kotlin("jvm") version "1.9.25"
 	kotlin("plugin.spring") version "1.9.25"
-	id("org.springframework.boot") version "3.3.4"
-	id("io.spring.dependency-management") version "1.1.6"
-	id("org.graalvm.buildtools.native") version "0.10.3"
+	id("org.springframework.boot") version "3.5.16"
+	id("io.spring.dependency-management") version "1.1.7"
+	id("org.graalvm.buildtools.native") version "0.10.6"
 }
 
 group = "com.kkpa"
@@ -19,14 +19,16 @@ repositories {
 	mavenCentral()
 }
 
-extra["springCloudVersion"] = "2023.0.3"
+// Spring Cloud 2025.0 is the release train for Spring Boot 3.5.
+extra["springCloudVersion"] = "2025.0.0"
 
 dependencies {
 	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 	implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j")
-	implementation("org.springframework.cloud:spring-cloud-starter-gateway")
+	// Spring Cloud Gateway 4.3 renamed the starter. Routes live under spring.cloud.gateway.server.webflux.
+	implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux")
 	implementation("org.springframework.cloud:spring-cloud-starter-consul-discovery")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("com.github.ben-manes.caffeine:caffeine")

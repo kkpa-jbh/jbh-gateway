@@ -13,57 +13,59 @@ spring:
         service-name: API Gateway
 
     gateway:
-      routes:
-        # Before auth_api_route: the first matching route wins. Stricter limit against password guessing.
-        - id: auth_login_route
-          uri: lb://jbh-iam-service
-          predicates:
-            - Path=/jbh-api/auth/signin,/jbh-api/auth/signup,/jbh-api/auth/google
-          filters:
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@authRateLimiter}"
-                key-resolver: "#{@ipKeyResolver}"
+      server:
+        webflux:
+          routes:
+            # Before auth_api_route: the first matching route wins. Stricter limit against password guessing.
+            - id: auth_login_route
+              uri: lb://jbh-iam-service
+              predicates:
+                - Path=/jbh-api/auth/signin,/jbh-api/auth/signup,/jbh-api/auth/google
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    rate-limiter: "#{@authRateLimiter}"
+                    key-resolver: "#{@ipKeyResolver}"
 
-        - id: auth_api_route
-          uri: lb://jbh-iam-service
-          predicates:
-            - Path=/jbh-api/auth/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@inMemoryRateLimiter}"
-                key-resolver: "#{@ipKeyResolver}"
+            - id: auth_api_route
+              uri: lb://jbh-iam-service
+              predicates:
+                - Path=/jbh-api/auth/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    rate-limiter: "#{@inMemoryRateLimiter}"
+                    key-resolver: "#{@ipKeyResolver}"
 
-        - id: users_api_route
-          uri: lb://jbh-iam-service
-          predicates:
-            - Path=/jbh-api/users/**,/jbh-api/user-groups/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@inMemoryRateLimiter}"
-                key-resolver: "#{@ipKeyResolver}"
+            - id: users_api_route
+              uri: lb://jbh-iam-service
+              predicates:
+                - Path=/jbh-api/users/**,/jbh-api/user-groups/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    rate-limiter: "#{@inMemoryRateLimiter}"
+                    key-resolver: "#{@ipKeyResolver}"
 
-        - id: personal_finance_api_route
-          uri: lb://jbh-personal-finance
-          predicates:
-            - Path=/jbh-api/finance/**,/jbh-api/products/**,/jbh-api/preferences/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@inMemoryRateLimiter}"
-                key-resolver: "#{@ipKeyResolver}"
+            - id: personal_finance_api_route
+              uri: lb://jbh-personal-finance
+              predicates:
+                - Path=/jbh-api/finance/**,/jbh-api/products/**,/jbh-api/preferences/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    rate-limiter: "#{@inMemoryRateLimiter}"
+                    key-resolver: "#{@ipKeyResolver}"
 
-        - id: notifications_api_route
-          uri: lb://jbh-personal-finance
-          predicates:
-            - Path=/jbh-api/notifications/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@inMemoryRateLimiter}"
-                key-resolver: "#{@ipKeyResolver}"
+            - id: notifications_api_route
+              uri: lb://jbh-personal-finance
+              predicates:
+                - Path=/jbh-api/notifications/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    rate-limiter: "#{@inMemoryRateLimiter}"
+                    key-resolver: "#{@ipKeyResolver}"
 
   application:
     name: jbh-gateway

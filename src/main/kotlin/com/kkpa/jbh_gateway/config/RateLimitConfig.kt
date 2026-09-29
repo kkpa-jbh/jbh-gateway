@@ -6,7 +6,8 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
-import org.jboss.logging.Logger
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.gateway.filter.ratelimit.RateLimiter
 import org.springframework.cloud.gateway.filter.ratelimit.RateLimiter.Response
@@ -32,7 +33,7 @@ class RateLimitConfig(
 ) {
 
     companion object {
-        private val LOG: Logger = Logger.getLogger(RateLimitConfig::class.java)
+        private val LOG: Logger = LoggerFactory.getLogger(RateLimitConfig::class.java)
         private const val FORWARDED_FOR_HEADER = "X-Forwarded-For"
     }
 
@@ -41,7 +42,7 @@ class RateLimitConfig(
         .filter { it.isNotEmpty() }
         .mapNotNull { cidr ->
             IpNetwork.parse(cidr) ?: run {
-                LOG.warnf("Ignoring invalid trusted proxy CIDR: %s", cidr)
+                LOG.warn("Ignoring invalid trusted proxy CIDR: {}", cidr)
                 null
             }
         }

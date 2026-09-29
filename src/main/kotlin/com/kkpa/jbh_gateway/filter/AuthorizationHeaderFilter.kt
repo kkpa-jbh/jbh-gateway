@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.kkpa.jbh_gateway.model.AuthErrorCode
 import com.kkpa.jbh_gateway.model.AuthErrorResponse
 import com.kkpa.jbh_gateway.service.JwtValidator
-import org.jboss.logging.Logger
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.cloud.gateway.filter.GatewayFilterChain
 import org.springframework.cloud.gateway.filter.GlobalFilter
 import org.springframework.core.Ordered
@@ -22,7 +23,7 @@ class AuthorizationGlobalFilter(
 ) : GlobalFilter, Ordered {
 
     companion object {
-        private val LOG: Logger = Logger.getLogger(AuthorizationGlobalFilter::class.java)
+        private val LOG: Logger = LoggerFactory.getLogger(AuthorizationGlobalFilter::class.java)
         const val USER_ID_ATTRIBUTE = "userId"
         private const val LOCAL_COOKIE_NAME = "JBH_TOKEN"
         private const val SECURE_COOKIE_NAME = "__Secure-JBH_TOKEN"
@@ -38,28 +39,28 @@ class AuthorizationGlobalFilter(
 
         val isPublicJBHAPI = publicPaths.any { path.startsWith(it) }
 
-        LOG.debugf("Incoming request: method=%s, path=%s, clientIp=%s, requiresAuth=%s", method, path, clientIp, !isPublicJBHAPI)
+        LOG.debug("Incoming request: method={}, path={}, clientIp={}, requiresAuth={}", method, path, clientIp, !isPublicJBHAPI)
 
         if (isPublicJBHAPI) {
-            LOG.debugf("Public route accessed: %s %s", method, path)
+            LOG.debug("Public route accessed: {} {}", method, path)
             return chain.filter(exchange)
         }
 
         val token = extractToken(exchange)
 
         if (token == null) {
-            LOG.warnf("Missing token for protected route: %s %s from clientIp=%s", method, path, clientIp)
+            LOG.warn("Missing token for protected route: {} {} from clientIp={}", method, path, clientIp)
             return writeErrorResponse(exchange, AuthErrorCode.MISSING_TOKEN)
         }
 
         return when (val result = jwtValidator.validateToken(token)) {
             is JwtValidator.ValidationResult.Valid -> {
                 exchange.attributes[USER_ID_ATTRIBUTE] = result.userId
-                LOG.debugf("Authorized request: %s %s, userId=%s, clientIp=%s", method, path, result.userId, clientIp)
+                LOG.debug("Authorized request: {} {}, userId={}, clientIp={}", method, path, result.userId, clientIp)
                 chain.filter(exchange)
             }
             is JwtValidator.ValidationResult.Invalid -> {
-                LOG.warnf("Invalid token for: %s %s, errorCode=%s, clientIp=%s", method, path, result.errorCode.code, clientIp)
+                LOG.warn("Invalid token for: {} {}, errorCode={}, clientIp={}", method, path, result.errorCode.code, clientIp)
                 writeErrorResponse(exchange, result.errorCode)
             }
         }

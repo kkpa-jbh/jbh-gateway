@@ -9,7 +9,7 @@ JBH Gateway is a reactive API Gateway built with Spring Cloud Gateway and Kotlin
 It serves as the entry point for microservices, providing routing, rate limiting, circuit breaking, and authorization.
 
 **Key Technologies:**
-- Kotlin with Spring Boot 3.3.4
+- Kotlin with Spring Boot 3.5.16, Spring Cloud 2025.0.0 (Gateway 4.3, starter `spring-cloud-starter-gateway-server-webflux`)
 - Spring Cloud Gateway (reactive/non-blocking)
 - Consul for service discovery
 - Resilience4J for circuit breaking
@@ -92,7 +92,7 @@ Consul integration:
 - Use `reactor-test` for testing reactive flows
 
 **Adding New Routes:**
-1. Add route configuration in `application.yml` under `spring.cloud.gateway.routes`
+1. Add route configuration in `application.yml` under `spring.cloud.gateway.server.webflux.routes` (the Gateway 4.3 prefix; the old `spring.cloud.gateway.routes` is deprecated)
 2. Use `lb://service-name` for load-balanced Consul services
 3. Apply rate limiting via `RequestRateLimiter` filter
 4. New routes are protected by default. Add the path to `publicPaths` in `AuthorizationGlobalFilter` only if it must be public

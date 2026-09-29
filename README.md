@@ -19,7 +19,7 @@ JBH Gateway serves as the entry point for client requests in a microservices eco
 ## Technology Stack
 
 - **Kotlin** - Primary programming language
-- **Spring Boot 3.3.4** - Application framework
+- **Spring Boot 3.5.16** - Application framework (Spring Cloud 2025.0.0)
 - **Spring Cloud Gateway** - API Gateway implementation
 - **Project Reactor** - Reactive programming model
 - **Resilience4J** - Circuit breaker and fault tolerance
