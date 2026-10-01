@@ -86,7 +86,7 @@ jbh:
 
 jwt:
   # Required, no default: Base64, at least 32 bytes. Same value as jbh-iam.
-  secret: ${JWT_SECRET}
+  secret: ${JBH_JWT_SECRET}
   token-type-claim: token_type
   access-token-type: ACCESS
 

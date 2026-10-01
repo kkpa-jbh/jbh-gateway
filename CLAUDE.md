@@ -52,7 +52,7 @@ The gateway routes requests to backend microservices via Consul service discover
 **Authorization is handled by a GlobalFilter** (class `AuthorizationGlobalFilter` in `filter/AuthorizationHeaderFilter.kt`, order -1):
 - Public paths: only `/jbh-api/auth/**` (the `publicPaths` list). **Every other path is protected by default.**
 - Token is read in this order: `Authorization: Bearer <token>` header, then cookie `JBH_TOKEN` (local), then cookie `__Secure-JBH_TOKEN` (prod).
-- `JwtValidator` checks the signature (shared `jwt.secret` / env `JWT_SECRET`, required, no default, Base64, same as `jbh-iam`; key = `Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret))`, HS256), expiration, the `token_type` claim (`ACCESS`), and a non-blank `sub` (user id).
+- `JwtValidator` checks the signature (shared `jwt.secret` / env `JBH_JWT_SECRET`, required, no default, Base64, same as `jbh-iam`; key = `Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret))`, HS256), expiration, the `token_type` claim (`ACCESS`), and a non-blank `sub` (user id).
 - On success, the user id is stored in the exchange attribute `userId`.
 - On failure, it returns `401` with a JSON body (`error_code`, `message`) from `AuthErrorCode`.
 
