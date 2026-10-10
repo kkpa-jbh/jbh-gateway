@@ -48,7 +48,7 @@ class JwtValidatorTest {
     fun `missing secret stops the start`() {
         assertThatThrownBy { JwtValidator(TestTokens.properties(secret = "")) }
             .isInstanceOf(IllegalArgumentException::class.java)
-        assertThatThrownBy { JwtValidator(TestTokens.properties(secret = "\${JWT_SECRET}")) }
+        assertThatThrownBy { JwtValidator(TestTokens.properties(secret = "\${JBH_JWT_SECRET}")) }
             .isInstanceOf(IllegalArgumentException::class.java)
     }
 

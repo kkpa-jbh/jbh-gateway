@@ -16,11 +16,11 @@ import javax.crypto.SecretKey
 class JwtValidator(private val jwtProperties: JwtProperties) {
 
     // The secret is Base64. jbh-iam decodes it the same way to sign the tokens (HS256).
-    // Built at start: a missing or bad JWT_SECRET stops the gateway instead of rejecting every request.
-    // (@ConfigurationProperties keeps an unresolved "${JWT_SECRET}" as text, so this check is needed.)
+    // Built at start: a missing or bad JBH_JWT_SECRET stops the gateway instead of rejecting every request.
+    // (@ConfigurationProperties keeps an unresolved "${JBH_JWT_SECRET}" as text, so this check is needed.)
     private val secretKey: SecretKey = run {
         val secret = jwtProperties.secret
-        require(secret.isNotBlank() && !secret.startsWith("\${")) { "Set env JWT_SECRET (Base64, at least 32 bytes)" }
+        require(secret.isNotBlank() && !secret.startsWith("\${")) { "Set env JBH_JWT_SECRET (Base64, at least 32 bytes)" }
         Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret))
     }
 

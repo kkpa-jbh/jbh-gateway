@@ -95,7 +95,7 @@ Main settings:
 - `spring.cloud.consul.host` / `port`: env `CONSUL_HOST` / `CONSUL_PORT` (default `localhost:8500`)
 - `spring.cloud.consul.discovery.hostname`: env `CONSUL_DISCOVERY_HOSTNAME` (default `localhost`; Docker: `jbh-gateway`)
 - `jbh.rate-limit.trusted-proxies`: env `JBH_TRUSTED_PROXIES` (default empty: only loopback is trusted)
-- `jwt.secret` (env `JWT_SECRET`): **required**, no default (Base64, at least 32 bytes). The gateway stops at start without it. Must be the same value as in `jbh-iam`
+- `jwt.secret` (env `JBH_JWT_SECRET`): **required**, no default (Base64, at least 32 bytes). The gateway stops at start without it. Must be the same value as in `jbh-iam`
 
 Note: the Resilience4J dependency is present, but no route uses a `CircuitBreaker` filter yet.
 
