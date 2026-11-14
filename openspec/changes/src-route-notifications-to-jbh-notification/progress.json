@@ -1,0 +1,226 @@
+{
+  "schema_version": 1,
+  "kind": "change",
+  "change": "src-route-notifications-to-jbh-notification",
+  "module": "src",
+  "roadmap": null,
+  "request": "JBH-74 section 6: in src/main/resources/application.yml, route notifications_api_route, change uri lb://jbh-personal-finance to lb://jbh-notification. Path and filters stay. The new service registers in Consul as jbh-notification. Ticket: JBH-74 (naming only; do NOT move it in Linear — jbh-leader owns status). Stop after the proposal is written, validated, briefed (Step 3a), and committed. Do not dispatch workers (Step 5) until jbh-leader sends \"go section 6\".",
+  "status": "in-progress",
+  "rollup": {
+    "current": [
+      "1.1",
+      "2.1",
+      "2.2"
+    ],
+    "pending": [
+      "3.1",
+      "3.2"
+    ],
+    "blocked": [],
+    "done": []
+  },
+  "created_at": "2026-11-14T13:32:59Z",
+  "updated_at": "2026-11-14T20:45:37Z",
+  "leader": {
+    "assistant": "Claude Code",
+    "model": "claude-opus-5-5"
+  },
+  "git": {
+    "strategy": "auto",
+    "branch": "ft/CH1-JBH-74-src-route-notifications-to-jbh-notification",
+    "base": "6538ef1783b0fee1e01fe6231a2179e4d55bbd20",
+    "ticket": "JBH-74",
+    "ticket_url": "https://linear.app/kkpa/issue/JBH-74/move-jbh-notification-out-of-jbh-personal-finance-into-its-own",
+    "ticket_tracker": "linear",
+    "created_at": "2026-11-14T13:32:59Z"
+  },
+  "test_first": {
+    "status": "skipped",
+    "commit": null,
+    "tests": [],
+    "approved_at": null
+  },
+  "tasks": [
+    {
+      "id": "1.1",
+      "title": "application.yml notifications_api_route: uri lb://jbh-personal-finance -> lb://jbh-notification",
+      "module": "src",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "awaiting-user-verification",
+      "agent": "src",
+      "model": "claude-haiku-5-5",
+      "started_at": "2026-11-14T20:45:13Z",
+      "completed_at": "2026-11-14T20:45:15Z",
+      "duration_seconds": 2,
+      "notes": "notifications_api_route uri changed to lb://jbh-notification. Path predicate and RequestRateLimiter filter unchanged. tasks.md 1.1 ticked. D1, D2 compliant.",
+      "budget": {
+        "five_hour_pct_start": null,
+        "five_hour_pct_end": 16,
+        "five_hour_pct_delta": null,
+        "cost_usd_delta": null,
+        "context_pct_end": 19,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave 1 shared; five_hour_pct not reported by statusline"
+      }
+    },
+    {
+      "id": "2.1",
+      "title": "README.md route table row for /jbh-api/notifications/**: lb://jbh-notification (owner: leader)",
+      "module": "src",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "awaiting-user-verification",
+      "agent": "leader",
+      "model": "claude-opus-5-5",
+      "started_at": "2026-11-14T20:45:02Z",
+      "completed_at": "2026-11-14T20:45:37Z",
+      "duration_seconds": 35,
+      "notes": "README.md route table row now lb://jbh-notification.",
+      "budget": {
+        "five_hour_pct_start": null,
+        "five_hour_pct_end": 16,
+        "five_hour_pct_delta": null,
+        "cost_usd_delta": null,
+        "context_pct_end": 19,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave 1 shared; five_hour_pct not reported by statusline"
+      }
+    },
+    {
+      "id": "2.2",
+      "title": "CLAUDE.md Routing Strategy: notifications -> jbh-notification (owner: leader)",
+      "module": "src",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "awaiting-user-verification",
+      "agent": "leader",
+      "model": "claude-opus-5-5",
+      "started_at": "2026-11-14T20:45:02Z",
+      "completed_at": "2026-11-14T20:45:37Z",
+      "duration_seconds": 35,
+      "notes": "CLAUDE.md Routing Strategy: notifications go to jbh-notification, its own service.",
+      "budget": {
+        "five_hour_pct_start": null,
+        "five_hour_pct_end": 16,
+        "five_hour_pct_delta": null,
+        "cost_usd_delta": null,
+        "context_pct_end": 19,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave 1 shared; five_hour_pct not reported by statusline"
+      }
+    },
+    {
+      "id": "3.1",
+      "title": "Run the existing suite: ./gradlew test",
+      "module": "src",
+      "depends_on": [
+        "1.1"
+      ],
+      "parallel_ok": false,
+      "status": "pending",
+      "agent": null,
+      "model": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    },
+    {
+      "id": "3.2",
+      "title": "Manual check from design.md Test contract (route, 401, 429)",
+      "module": "src",
+      "depends_on": [
+        "1.1"
+      ],
+      "parallel_ok": false,
+      "status": "pending",
+      "agent": null,
+      "model": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    }
+  ],
+  "review": {
+    "status": "pending",
+    "agent": null,
+    "brief": null,
+    "rounds": []
+  },
+  "decisions": [
+    {
+      "id": "D1",
+      "at": "2026-11-14T13:32:59Z",
+      "scope": "change",
+      "made_by": "user",
+      "decision": "Pipeline config block: Modules-Root '.', module src, Doc-Pack CLAUDE.md; Complexity-Check = detekt CLI + config/detekt/complexity.yml",
+      "why": "Repo had no block and no complexity tool; user picked the detekt CLI over the Gradle plugin to avoid a build change.",
+      "covered_by": null
+    },
+    {
+      "id": "D2",
+      "at": "2026-11-14T13:32:59Z",
+      "scope": "change",
+      "made_by": "leader",
+      "decision": "Step 2 interview skipped",
+      "why": "No interview agenda, no database change, one possible design (one YAML value).",
+      "covered_by": null
+    },
+    {
+      "id": "D3",
+      "at": "2026-11-14T13:32:59Z",
+      "scope": "change",
+      "made_by": "leader",
+      "decision": "test_first skipped; no unit or integration tests planned",
+      "why": "JBH-74 plan excludes unit tests; change is YAML only. Existing suite plus manual check verify it.",
+      "covered_by": "JBH-74 plan, Execution Rules"
+    },
+    {
+      "id": "D4",
+      "at": "2026-11-14T13:32:59Z",
+      "scope": "change",
+      "made_by": "user",
+      "decision": "Design briefing (Step 3a) approved",
+      "why": "User answered 'yes they are OK'. Size ~6 lines / 3 files, under cap 500 / 15.",
+      "covered_by": null
+    },
+    {
+      "id": "D5",
+      "at": "2026-11-14T13:32:59Z",
+      "scope": "concurrency",
+      "made_by": "leader",
+      "decision": "Step 3b: no race or sync risk",
+      "why": "Only code task is one route uri read at startup; no shared data, no async code, no check-then-act.",
+      "covered_by": null
+    }
+  ],
+  "events": [
+    {
+      "at": "2026-11-14T13:32:59Z",
+      "agent": "leader",
+      "event": "setup commit eb7c6ef (OpenSpec init, Pipeline config block, detekt config); artifacts commit baaf16f"
+    },
+    {
+      "at": "2026-11-14T13:32:59Z",
+      "agent": "leader",
+      "event": "halt before Step 5: jbh-leader must send 'go section 6'. JBH-74 is not moved in Linear by this session."
+    },
+    {
+      "at": "2026-11-14T20:45:02Z",
+      "agent": "leader",
+      "event": "go section 6 received from jbh-leader. Wave 1 dispatched: 1.1 to src worker (haiku); 2.1, 2.2 by leader. budget start five_hour_pct=None cost_usd=5.4088025"
+    },
+    {
+      "at": "2026-11-14T20:45:37Z",
+      "agent": "leader",
+      "event": "wave 1 reconciled: 1.1 (src worker), 2.1, 2.2 (leader) awaiting suite. Decision IDs D1-D4 checked against design.md. cost_usd now 6.935378965"
+    }
+  ]
+}

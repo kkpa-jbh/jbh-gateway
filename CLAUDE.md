@@ -45,7 +45,7 @@ The gateway routes requests to backend microservices via Consul service discover
 - `/jbh-api/auth/**` → `jbh-iam-service` (public)
 - `/jbh-api/users/**`, `/jbh-api/user-groups/**` → `jbh-iam-service` (protected)
 - `/jbh-api/finance/**`, `/jbh-api/products/**`, `/jbh-api/preferences/**` → `jbh-personal-finance` (protected)
-- `/jbh-api/notifications/**` → `jbh-personal-finance` (protected; notifications is a module inside the finance app, not a separate service)
+- `/jbh-api/notifications/**` → `jbh-notification` (protected; its own service, no longer a module inside the finance app)
 
 ### Security Model
 

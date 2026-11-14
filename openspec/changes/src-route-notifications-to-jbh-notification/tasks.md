@@ -1,11 +1,11 @@
 ## 1. Gateway route (owner: src worker)
 
-- [ ] 1.1 In `src/main/resources/application.yml`, route `notifications_api_route`: change `uri: lb://jbh-personal-finance` to `uri: lb://jbh-notification`. Path predicate and `RequestRateLimiter` filter unchanged. Depends on: none.
+- [x] 1.1 In `src/main/resources/application.yml`, route `notifications_api_route`: change `uri: lb://jbh-personal-finance` to `uri: lb://jbh-notification`. Path predicate and `RequestRateLimiter` filter unchanged. Depends on: none.
 
 ## 2. Docs (owner: leader, outside module `src`)
 
-- [ ] 2.1 `README.md` (line ~89), route table row for `/jbh-api/notifications/**`: target `lb://jbh-notification`. Depends on: none. Owner: leader.
-- [ ] 2.2 `CLAUDE.md` (line ~48), "Routing Strategy": notifications goes to `jbh-notification` (its own service, no longer a module inside finance). Depends on: none. Owner: leader.
+- [x] 2.1 `README.md` (line ~89), route table row for `/jbh-api/notifications/**`: target `lb://jbh-notification`. Depends on: none. Owner: leader.
+- [x] 2.2 `CLAUDE.md` (line ~48), "Routing Strategy": notifications goes to `jbh-notification` (its own service, no longer a module inside finance). Depends on: none. Owner: leader.
 
 ## 3. Verification (manual, run by the user)
 

@@ -86,7 +86,7 @@ Services are found in Consul by name with the `lb://` scheme.
 | `/jbh-api/auth/**` | `lb://jbh-iam-service` (public) |
 | `/jbh-api/users/**`, `/jbh-api/user-groups/**` | `lb://jbh-iam-service` |
 | `/jbh-api/finance/**`, `/jbh-api/products/**`, `/jbh-api/preferences/**` | `lb://jbh-personal-finance` |
-| `/jbh-api/notifications/**` | `lb://jbh-personal-finance` |
+| `/jbh-api/notifications/**` | `lb://jbh-notification` |
 
 Every route uses the `RequestRateLimiter` filter (`inMemoryRateLimiter` + `ipKeyResolver`).
 
