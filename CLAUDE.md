@@ -100,6 +100,14 @@ Consul integration:
 **Actuator Endpoints:**
 Available at `/actuator/`: `health`, `info` only
 
+## Pipeline config (kkpa-orchestrate-change)
+
+- **Modules-Root:** `.` (one module: `src`. Root docs like `README.md` and `CLAUDE.md` are leader-owned)
+- **Doc-Pack:** `CLAUDE.md`
+- **Complexity-Check:** `detekt --input src/main/kotlin --config config/detekt/complexity.yml` (detekt CLI, `brew install detekt`)
+- **Design-Gates:** `database`
+- **Git-Strategy:** `auto`
+
 ## System map sync (`../jbh-deploy/README.md`)
 
 This repo is one part of the JBH system. The map of how all JBH services talk to each other
