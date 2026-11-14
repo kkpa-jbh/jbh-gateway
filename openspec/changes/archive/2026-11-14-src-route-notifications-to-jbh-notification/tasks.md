@@ -9,7 +9,7 @@
 
 ## 3. Verification (manual, run by the user)
 
-- [ ] 3.1 Run the existing suite: `./gradlew test`. Depends on: 1.1.
+- [x] 3.1 Run the existing suite: `./gradlew test`. Depends on: 1.1.
 - [ ] 3.2 Manual check from design.md "Test contract" (200 route reaches `jbh-notification`, 401 without token, 429 over limit). Depends on: 1.1 and `jbh-notification` running in Consul.
 
 Tasks 1.1, 2.1 and 2.2 touch different files and can run in parallel. No unit tests, so no test blueprint group.

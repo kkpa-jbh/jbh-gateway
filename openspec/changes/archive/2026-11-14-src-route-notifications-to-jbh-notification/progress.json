@@ -5,22 +5,21 @@
   "module": "src",
   "roadmap": null,
   "request": "JBH-74 section 6: in src/main/resources/application.yml, route notifications_api_route, change uri lb://jbh-personal-finance to lb://jbh-notification. Path and filters stay. The new service registers in Consul as jbh-notification. Ticket: JBH-74 (naming only; do NOT move it in Linear — jbh-leader owns status). Stop after the proposal is written, validated, briefed (Step 3a), and committed. Do not dispatch workers (Step 5) until jbh-leader sends \"go section 6\".",
-  "status": "in-progress",
+  "status": "archived",
   "rollup": {
-    "current": [
+    "current": [],
+    "pending": [],
+    "blocked": [],
+    "done": [
       "1.1",
       "2.1",
-      "2.2"
-    ],
-    "pending": [
+      "2.2",
       "3.1",
       "3.2"
-    ],
-    "blocked": [],
-    "done": []
+    ]
   },
   "created_at": "2026-11-14T13:32:59Z",
-  "updated_at": "2026-11-14T20:45:37Z",
+  "updated_at": "2026-11-14T22:09:05Z",
   "leader": {
     "assistant": "Claude Code",
     "model": "claude-opus-5-5"
@@ -47,7 +46,7 @@
       "module": "src",
       "depends_on": [],
       "parallel_ok": true,
-      "status": "awaiting-user-verification",
+      "status": "done",
       "agent": "src",
       "model": "claude-haiku-5-5",
       "started_at": "2026-11-14T20:45:13Z",
@@ -71,7 +70,7 @@
       "module": "src",
       "depends_on": [],
       "parallel_ok": true,
-      "status": "awaiting-user-verification",
+      "status": "done",
       "agent": "leader",
       "model": "claude-opus-5-5",
       "started_at": "2026-11-14T20:45:02Z",
@@ -95,7 +94,7 @@
       "module": "src",
       "depends_on": [],
       "parallel_ok": true,
-      "status": "awaiting-user-verification",
+      "status": "done",
       "agent": "leader",
       "model": "claude-opus-5-5",
       "started_at": "2026-11-14T20:45:02Z",
@@ -121,13 +120,13 @@
         "1.1"
       ],
       "parallel_ok": false,
-      "status": "pending",
-      "agent": null,
-      "model": null,
-      "started_at": null,
-      "completed_at": null,
-      "duration_seconds": null,
-      "notes": null,
+      "status": "done",
+      "agent": "leader",
+      "model": "claude-opus-5-5",
+      "started_at": "2026-11-14T20:45:40Z",
+      "completed_at": "2026-11-14T20:46:20Z",
+      "duration_seconds": 40,
+      "notes": "Leader ran ./gradlew --no-daemon build (compile + test): exit 0, 22 tests, 0 failures. detekt complexity check exit 0.",
       "budget": null
     },
     {
@@ -138,21 +137,36 @@
         "1.1"
       ],
       "parallel_ok": false,
-      "status": "pending",
-      "agent": null,
+      "status": "done",
+      "agent": "leader",
       "model": null,
       "started_at": null,
-      "completed_at": null,
+      "completed_at": "2026-11-14T22:08:58Z",
       "duration_seconds": null,
-      "notes": null,
+      "notes": "NOT RUN here. User decision D8: the manual check (route, 401, 429, 503) moves to the JBH-74 User Verification Steps, run after jbh-notification is deployed. tasks.md 3.2 stays unchecked on purpose.",
       "budget": null
     }
   ],
   "review": {
-    "status": "pending",
-    "agent": null,
-    "brief": null,
-    "rounds": []
+    "status": "approved",
+    "agent": "src-reviewer",
+    "brief": "Change: one route uri (notifications_api_route -> lb://jbh-notification), plus README.md/CLAUDE.md route lines. Check: path predicate and RequestRateLimiter filter unchanged; no publicPaths change, so the route stays JWT-protected (D2); docs match the yml (D3); out of scope per D4: ../jbh-deploy/README.md, compose, Caddy. Same branch also has setup commit eb7c6ef (OpenSpec init, Pipeline config, detekt config) and docs(ci) commit b98e608 (image.yml comments only, no behaviour change; check that). User decisions: D1 config/detekt, D4 briefing approved, D7 security skip. test_first skipped (D3), no tests planned. Signals: build+suite assistant-run by leader (exit 0, 22 tests); complexity check assistant-run (exit 0); 3.2 manual, not run yet (user).",
+    "rounds": [
+      {
+        "round": 1,
+        "verdict": "approved",
+        "at": "2026-11-14T22:30:00Z",
+        "findings": [],
+        "security": {
+          "status": "skipped",
+          "ran_at": null,
+          "scope": null,
+          "findings": [],
+          "note": "Skipped by user decision D7: config-only uri change, no auth code, no publicPaths change, no secrets."
+        },
+        "note": "Only uri changed; predicate and filter intact; docs match yml; image.yml diff is comments and blank lines only. Task 3.2 awaits user verification."
+      }
+    ]
   },
   "decisions": [
     {
@@ -199,6 +213,33 @@
       "decision": "Step 3b: no race or sync risk",
       "why": "Only code task is one route uri read at startup; no shared data, no async code, no check-then-act.",
       "covered_by": null
+    },
+    {
+      "id": "D6",
+      "at": "2026-11-14T22:06:52Z",
+      "scope": "task:3.2",
+      "made_by": "leader",
+      "decision": "Mark verified with 3.2 still awaiting-user-verification",
+      "why": "3.2 is a manual check that needs jbh-notification and the gateway running; the leader never starts services. Listed for the user at archive.",
+      "covered_by": "JBH-74 plan, User Verification Steps"
+    },
+    {
+      "id": "D7",
+      "at": "2026-11-14T22:06:52Z",
+      "scope": "review:security-gate",
+      "made_by": "user",
+      "decision": "Skip /security-review",
+      "why": "User chose skip: config-only routing change (uri target), no auth code, no publicPaths change, no secrets.",
+      "covered_by": null
+    },
+    {
+      "id": "D8",
+      "at": "2026-11-14T22:08:58Z",
+      "scope": "task:3.2",
+      "made_by": "user",
+      "decision": "Hand manual check 3.2 to the JBH-74 User Verification Steps; archive now",
+      "why": "Check needs jbh-notification (open PR) and the gateway running; it can only run in the release order. User chose to archive now.",
+      "covered_by": "JBH-74 plan, User Verification Steps"
     }
   ],
   "events": [
@@ -221,6 +262,31 @@
       "at": "2026-11-14T20:45:37Z",
       "agent": "leader",
       "event": "wave 1 reconciled: 1.1 (src worker), 2.1, 2.2 (leader) awaiting suite. Decision IDs D1-D4 checked against design.md. cost_usd now 6.935378965"
+    },
+    {
+      "at": "2026-11-14T20:46:33Z",
+      "agent": "leader",
+      "event": "suite pass, verifier: the leader (assistantRunsTests). ./gradlew --no-daemon build exit 0 (22 tests, 0 failures); detekt --input src/main/kotlin --config config/detekt/complexity.yml exit 0. Covers run points 1 and 2 (no code change after)."
+    },
+    {
+      "at": "2026-11-14T20:46:33Z",
+      "agent": "leader",
+      "event": "Step 6 verify: openspec validate --strict OK; spec scenarios match application.yml. Real size: route + docs 3 lines in 3 files (estimate ~6 lines / 3 files)."
+    },
+    {
+      "at": "2026-11-14T22:06:52Z",
+      "agent": "leader",
+      "event": "review round 1 dispatched to src-reviewer (Security-Gate: skip). cost_usd start 7.298638164999999"
+    },
+    {
+      "at": "2026-11-14T22:08:58Z",
+      "agent": "leader",
+      "event": "review round 1 approved by src-reviewer (no findings, security skipped per D7). 3.2 handed to the user per D8 (not run)."
+    },
+    {
+      "at": "2026-11-14T22:09:05Z",
+      "agent": "leader",
+      "event": "archived as 2026-11-14-src-route-notifications-to-jbh-notification; spec gateway-routing created in openspec/specs. KB sync skipped (no kkpa/context). Linear not touched (jbh-leader owns JBH-74)."
     }
   ]
 }
