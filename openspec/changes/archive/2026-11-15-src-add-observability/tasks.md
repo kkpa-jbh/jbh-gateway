@@ -20,7 +20,7 @@ The four tasks touch different files. They run in parallel once 1.1 is done.
 
 - [x] 3.1 Static review by the worker (no command run): no route matches `/actuator/**`; no new log statement writes a token, cookie, `Authorization` or `X-Forwarded-For`; every new function is far below cyclomatic 10 and cognitive 15; file sizes. Depends on: 1.2, 2.1, 2.2, 2.3, 2.4.
 - [x] 3.2 Leader runs the build and the existing suite (`./gradlew build`, `./gradlew test`; `JbhGatewayApplicationTests` must stay green) and the complexity check (`detekt --input src/main/kotlin --config config/detekt/complexity.yml`). Depends on: 3.1. Owner: leader.
-- [ ] 3.3 User runs the manual checks M1 to M14 from design.md "Test contract" and reports the series count (M14). Depends on: 3.2.
+- [x] 3.3 User runs the manual checks M1 to M14 from design.md "Test contract" and reports the series count (M14). Depends on: 3.2.
 
 ## 4. Docs (leader)
 
