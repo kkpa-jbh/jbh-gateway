@@ -5,16 +5,32 @@
   "module": "src",
   "roadmap": null,
   "request": "JBH-55 section 3 (sub-issue JBH-59, record as git.ticket). Plan: ../kkpa/tickets/JBH-55/JBH-55.md section 3. Fixed names from section 1: OTEL_EXPORTER_OTLP_ENDPOINT=http://jbh-alloy:4317 (Docker), http://localhost:14317 (IDE), OTEL_SDK_DISABLED=false, JBH_ENV=local. Start from an up-to-date main.",
-  "status": "proposed",
+  "status": "in-progress",
   "rollup": {
     "current": [],
-    "pending": ["1.1", "1.2", "2.1", "2.2", "2.3", "2.4", "3.1", "3.2", "3.3", "4.1", "4.2"],
+    "pending": [
+      "2.1",
+      "2.2",
+      "2.3",
+      "2.4",
+      "3.1",
+      "3.2",
+      "3.3",
+      "4.1",
+      "4.2"
+    ],
     "blocked": [],
-    "done": []
+    "done": [
+      "1.1",
+      "1.2"
+    ]
   },
   "created_at": "2026-11-15T20:02:21Z",
-  "updated_at": "2026-11-15T20:02:21Z",
-  "leader": { "assistant": "Claude Code", "model": "claude-opus-5-5" },
+  "updated_at": "2026-11-15T20:04:42Z",
+  "leader": {
+    "assistant": "Claude Code",
+    "model": "claude-opus-5-5"
+  },
   "git": {
     "strategy": "auto",
     "branch": "ft/CH2-JBH-59-src-add-observability",
@@ -25,35 +41,334 @@
     "ticket_tracker": "linear",
     "created_at": "2026-11-15T19:33:00Z"
   },
-  "test_first": { "status": "skipped", "commit": null, "tests": [], "approved_at": null },
+  "test_first": {
+    "status": "skipped",
+    "commit": null,
+    "tests": [],
+    "approved_at": null
+  },
   "tasks": [
-    { "id": "1.1", "title": "build.gradle.kts: tracing bridge, OTLP exporter, Prometheus registry, pinned logback appender", "module": "src", "depends_on": [], "parallel_ok": true, "status": "pending", "agent": null, "model": null, "started_at": null, "completed_at": null, "duration_seconds": null, "notes": null, "budget": null },
-    { "id": "1.2", "title": "application.yml: export gate, OTLP, tracing, baggage, metrics, resource attributes, gateway observability", "module": "src", "depends_on": [], "parallel_ok": true, "status": "pending", "agent": null, "model": null, "started_at": null, "completed_at": null, "duration_seconds": null, "notes": null, "budget": null },
-    { "id": "2.1", "title": "TraceIdResponseFilter: X-Trace-Id on every response", "module": "src", "depends_on": ["1.1"], "parallel_ok": true, "status": "pending", "agent": null, "model": null, "started_at": null, "completed_at": null, "duration_seconds": null, "notes": null, "budget": null },
-    { "id": "2.2", "title": "OpenTelemetryAppenderConfig: install the appender at start", "module": "src", "depends_on": ["1.1"], "parallel_ok": true, "status": "pending", "agent": null, "model": null, "started_at": null, "completed_at": null, "duration_seconds": null, "notes": null, "budget": null },
-    { "id": "2.3", "title": "ObservationFilter: drop the query from gateway client span http.uri", "module": "src", "depends_on": ["1.1"], "parallel_ok": true, "status": "pending", "agent": null, "model": null, "started_at": null, "completed_at": null, "duration_seconds": null, "notes": null, "budget": null },
-    { "id": "2.4", "title": "logback-spring.xml: text non-prod, ECS JSON prod, OTel appender, exporter loggers excluded", "module": "src", "depends_on": ["1.1"], "parallel_ok": true, "status": "pending", "agent": null, "model": null, "started_at": null, "completed_at": null, "duration_seconds": null, "notes": null, "budget": null },
-    { "id": "3.1", "title": "Static review: no /actuator/** route, no secrets logged, complexity, file sizes", "module": "src", "depends_on": ["1.2", "2.1", "2.2", "2.3", "2.4"], "parallel_ok": false, "status": "pending", "agent": null, "model": null, "started_at": null, "completed_at": null, "duration_seconds": null, "notes": null, "budget": null },
-    { "id": "3.2", "title": "Leader runs build, suite and complexity check", "module": "src", "depends_on": ["3.1"], "parallel_ok": false, "status": "pending", "agent": null, "model": null, "started_at": null, "completed_at": null, "duration_seconds": null, "notes": null, "budget": null },
-    { "id": "3.3", "title": "User runs manual checks M1-M14 and reports the series count", "module": "src", "depends_on": ["3.2"], "parallel_ok": false, "status": "pending", "agent": null, "model": null, "started_at": null, "completed_at": null, "duration_seconds": null, "notes": null, "budget": null },
-    { "id": "4.1", "title": "CLAUDE.md and README.md Observability section", "module": "src", "depends_on": [], "parallel_ok": true, "status": "pending", "agent": null, "model": null, "started_at": null, "completed_at": null, "duration_seconds": null, "notes": null, "budget": null },
-    { "id": "4.2", "title": "jbh-deploy/README.md: X-Trace-Id line in Frontend to gateway", "module": "src", "depends_on": [], "parallel_ok": true, "status": "pending", "agent": null, "model": null, "started_at": null, "completed_at": null, "duration_seconds": null, "notes": null, "budget": null }
+    {
+      "id": "1.1",
+      "title": "build.gradle.kts: tracing bridge, OTLP exporter, Prometheus registry, pinned logback appender",
+      "module": "src",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "done",
+      "agent": "src",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T20:03:04Z",
+      "completed_at": "2026-11-15T20:04:42Z",
+      "duration_seconds": 98,
+      "notes": "Added tracing bridge, OTLP exporter, Prometheus registry (BOM); pinned logback appender 2.15.0-alpha (matches OTel SDK 1.49.0). context-propagation comes from micrometer-tracing 1.5.12.",
+      "budget": {
+        "five_hour_pct_start": 61,
+        "five_hour_pct_end": 64,
+        "five_hour_pct_delta": 3,
+        "cost_usd_delta": 0.5865,
+        "context_pct_end": 19,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave delta shared by 1.1+1.2; includes leader build run"
+      }
+    },
+    {
+      "id": "1.2",
+      "title": "application.yml: export gate, OTLP, tracing, baggage, metrics, resource attributes, gateway observability",
+      "module": "src",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "done",
+      "agent": "src",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T20:03:04Z",
+      "completed_at": "2026-11-15T20:04:42Z",
+      "duration_seconds": 98,
+      "notes": "All application.yml items from D1-D11 with why-comments; routes unchanged; no route matches /actuator/**.",
+      "budget": {
+        "five_hour_pct_start": 61,
+        "five_hour_pct_end": 64,
+        "five_hour_pct_delta": 3,
+        "cost_usd_delta": 0.5865,
+        "context_pct_end": 19,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave delta shared by 1.1+1.2; includes leader build run"
+      }
+    },
+    {
+      "id": "2.1",
+      "title": "TraceIdResponseFilter: X-Trace-Id on every response",
+      "module": "src",
+      "depends_on": [
+        "1.1"
+      ],
+      "parallel_ok": true,
+      "status": "pending",
+      "agent": null,
+      "model": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    },
+    {
+      "id": "2.2",
+      "title": "OpenTelemetryAppenderConfig: install the appender at start",
+      "module": "src",
+      "depends_on": [
+        "1.1"
+      ],
+      "parallel_ok": true,
+      "status": "pending",
+      "agent": null,
+      "model": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    },
+    {
+      "id": "2.3",
+      "title": "ObservationFilter: drop the query from gateway client span http.uri",
+      "module": "src",
+      "depends_on": [
+        "1.1"
+      ],
+      "parallel_ok": true,
+      "status": "pending",
+      "agent": null,
+      "model": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    },
+    {
+      "id": "2.4",
+      "title": "logback-spring.xml: text non-prod, ECS JSON prod, OTel appender, exporter loggers excluded",
+      "module": "src",
+      "depends_on": [
+        "1.1"
+      ],
+      "parallel_ok": true,
+      "status": "pending",
+      "agent": null,
+      "model": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    },
+    {
+      "id": "3.1",
+      "title": "Static review: no /actuator/** route, no secrets logged, complexity, file sizes",
+      "module": "src",
+      "depends_on": [
+        "1.2",
+        "2.1",
+        "2.2",
+        "2.3",
+        "2.4"
+      ],
+      "parallel_ok": false,
+      "status": "pending",
+      "agent": null,
+      "model": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    },
+    {
+      "id": "3.2",
+      "title": "Leader runs build, suite and complexity check",
+      "module": "src",
+      "depends_on": [
+        "3.1"
+      ],
+      "parallel_ok": false,
+      "status": "pending",
+      "agent": null,
+      "model": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    },
+    {
+      "id": "3.3",
+      "title": "User runs manual checks M1-M14 and reports the series count",
+      "module": "src",
+      "depends_on": [
+        "3.2"
+      ],
+      "parallel_ok": false,
+      "status": "pending",
+      "agent": null,
+      "model": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    },
+    {
+      "id": "4.1",
+      "title": "CLAUDE.md and README.md Observability section",
+      "module": "src",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "pending",
+      "agent": null,
+      "model": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    },
+    {
+      "id": "4.2",
+      "title": "jbh-deploy/README.md: X-Trace-Id line in Frontend to gateway",
+      "module": "src",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "pending",
+      "agent": null,
+      "model": null,
+      "started_at": null,
+      "completed_at": null,
+      "duration_seconds": null,
+      "notes": null,
+      "budget": null
+    }
   ],
-  "review": { "status": "pending", "agent": null, "brief": null, "rounds": [] },
+  "review": {
+    "status": "pending",
+    "agent": null,
+    "brief": null,
+    "rounds": []
+  },
   "decisions": [
-    { "id": "D1", "at": "2026-11-15T19:40:00Z", "scope": "change", "made_by": "user", "decision": "OTEL_SDK_DISABLED gates only OTLP export; management.tracing.enabled stays on", "why": "Trace id, X-Trace-Id and traceparent must work in prod before JBH-84 while nothing is sent", "covered_by": "Step 2 interview; plan revised by the leader session for sections 3-6" },
-    { "id": "D2", "at": "2026-11-15T19:42:00Z", "scope": "change", "made_by": "user", "decision": "SOLID: SRP only, no new interfaces", "why": "No real need for OCP/DIP in this change", "covered_by": "Step 2 interview" },
-    { "id": "D3", "at": "2026-11-15T19:42:00Z", "scope": "change", "made_by": "user", "decision": "Drop incoming baggage by config (baggage.enabled=false + RemoveRequestHeader=baggage), not in the filter", "why": "Trace context reads baggage before gateway filters; keeps the filter at one job", "covered_by": "Step 2 interview" },
-    { "id": "D4", "at": "2026-11-15T20:00:00Z", "scope": "change", "made_by": "user", "decision": "Design briefing approved; size cap exceeded (~650 lines incl. ~350 artifact lines) accepted", "why": "Code part is ~200 lines, easy to review whole", "covered_by": "Step 3a" },
-    { "id": "D5", "at": "2026-11-15T20:00:00Z", "scope": "change", "made_by": "user", "decision": "Add design D9 ObservationFilter (4th new class) to strip the query from client span http.uri", "why": "Plan rule: no personal data in span attributes; emails travel in query strings", "covered_by": "Step 3a" },
-    { "id": "D6", "at": "2026-11-15T20:01:00Z", "scope": "concurrency", "made_by": "leader", "decision": "No race or sync risk in any task", "why": "No shared state, no check-then-act, no new threads; install runs once; filters touch only their own exchange or context", "covered_by": null },
-    { "id": "D7", "at": "2026-11-15T20:02:00Z", "scope": "change", "made_by": "leader", "decision": "test_first skipped", "why": "Plan header excludes unit tests and the change has no unit-testable logic", "covered_by": "JBH-55 plan header: Unit tests excluded" },
-    { "id": "D8", "at": "2026-11-15T20:02:00Z", "scope": "change", "made_by": "leader", "decision": "Do not move JBH-59 in Linear from this session", "why": "Plan Execution Rules: only the leader session moves JBH-55 sub-issues; overrides the global pipeline-linear rule for this ticket", "covered_by": "JBH-55 Execution Rules" }
+    {
+      "id": "D1",
+      "at": "2026-11-15T19:40:00Z",
+      "scope": "change",
+      "made_by": "user",
+      "decision": "OTEL_SDK_DISABLED gates only OTLP export; management.tracing.enabled stays on",
+      "why": "Trace id, X-Trace-Id and traceparent must work in prod before JBH-84 while nothing is sent",
+      "covered_by": "Step 2 interview; plan revised by the leader session for sections 3-6"
+    },
+    {
+      "id": "D2",
+      "at": "2026-11-15T19:42:00Z",
+      "scope": "change",
+      "made_by": "user",
+      "decision": "SOLID: SRP only, no new interfaces",
+      "why": "No real need for OCP/DIP in this change",
+      "covered_by": "Step 2 interview"
+    },
+    {
+      "id": "D3",
+      "at": "2026-11-15T19:42:00Z",
+      "scope": "change",
+      "made_by": "user",
+      "decision": "Drop incoming baggage by config (baggage.enabled=false + RemoveRequestHeader=baggage), not in the filter",
+      "why": "Trace context reads baggage before gateway filters; keeps the filter at one job",
+      "covered_by": "Step 2 interview"
+    },
+    {
+      "id": "D4",
+      "at": "2026-11-15T20:00:00Z",
+      "scope": "change",
+      "made_by": "user",
+      "decision": "Design briefing approved; size cap exceeded (~650 lines incl. ~350 artifact lines) accepted",
+      "why": "Code part is ~200 lines, easy to review whole",
+      "covered_by": "Step 3a"
+    },
+    {
+      "id": "D5",
+      "at": "2026-11-15T20:00:00Z",
+      "scope": "change",
+      "made_by": "user",
+      "decision": "Add design D9 ObservationFilter (4th new class) to strip the query from client span http.uri",
+      "why": "Plan rule: no personal data in span attributes; emails travel in query strings",
+      "covered_by": "Step 3a"
+    },
+    {
+      "id": "D6",
+      "at": "2026-11-15T20:01:00Z",
+      "scope": "concurrency",
+      "made_by": "leader",
+      "decision": "No race or sync risk in any task",
+      "why": "No shared state, no check-then-act, no new threads; install runs once; filters touch only their own exchange or context",
+      "covered_by": null
+    },
+    {
+      "id": "D7",
+      "at": "2026-11-15T20:02:00Z",
+      "scope": "change",
+      "made_by": "leader",
+      "decision": "test_first skipped",
+      "why": "Plan header excludes unit tests and the change has no unit-testable logic",
+      "covered_by": "JBH-55 plan header: Unit tests excluded"
+    },
+    {
+      "id": "D8",
+      "at": "2026-11-15T20:02:00Z",
+      "scope": "change",
+      "made_by": "leader",
+      "decision": "Do not move JBH-59 in Linear from this session",
+      "why": "Plan Execution Rules: only the leader session moves JBH-55 sub-issues; overrides the global pipeline-linear rule for this ticket",
+      "covered_by": "JBH-55 Execution Rules"
+    },
+    {
+      "id": "D9",
+      "at": "2026-11-15T20:04:42Z",
+      "scope": "task:1.1",
+      "made_by": "leader",
+      "decision": "Used leader bracket timestamps for 1.1/1.2 instead of re-dispatching",
+      "why": "Worker reported placeholder times; work itself complete and verified; re-dispatch costs more than it gives",
+      "covered_by": null
+    }
   ],
   "events": [
-    { "at": "2026-11-15T19:33:00Z", "agent": "leader", "event": "branch ft/CH2-JBH-59-src-add-observability created off main 5f371cf; counter 2 -> 3" },
-    { "at": "2026-11-15T19:44:00Z", "agent": "leader", "event": "dispatched src worker (artifact mode, sonnet)" },
-    { "at": "2026-11-15T19:56:00Z", "agent": "leader", "event": "artifacts returned; openspec validate --strict passed; D1-D17 in design.md" },
-    { "at": "2026-11-15T20:02:21Z", "agent": "leader", "event": "briefing approved, concurrency check: none, progress.json created" }
+    {
+      "at": "2026-11-15T19:33:00Z",
+      "agent": "leader",
+      "event": "branch ft/CH2-JBH-59-src-add-observability created off main 5f371cf; counter 2 -> 3"
+    },
+    {
+      "at": "2026-11-15T19:44:00Z",
+      "agent": "leader",
+      "event": "dispatched src worker (artifact mode, sonnet)"
+    },
+    {
+      "at": "2026-11-15T19:56:00Z",
+      "agent": "leader",
+      "event": "artifacts returned; openspec validate --strict passed; D1-D17 in design.md"
+    },
+    {
+      "at": "2026-11-15T20:02:21Z",
+      "agent": "leader",
+      "event": "briefing approved, concurrency check: none, progress.json created"
+    },
+    {
+      "at": "2026-11-15T20:03:04Z",
+      "agent": "leader",
+      "event": "wave 1 dispatched: tasks 1.1, 1.2 to src worker (sonnet), one serial worker"
+    },
+    {
+      "at": "2026-11-15T20:04:42Z",
+      "agent": "leader",
+      "event": "wave 1 verified by the leader (assistantRunsTests): ./gradlew build -q exit 0, 22 tests 0 failures; detekt complexity exit 0"
+    }
   ]
 }

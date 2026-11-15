@@ -31,6 +31,12 @@ dependencies {
 	implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux")
 	implementation("org.springframework.cloud:spring-cloud-starter-consul-discovery")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	// Observability. Versions come from the Spring Boot BOM. micrometer-tracing already brings context-propagation.
+	implementation("io.micrometer:micrometer-tracing-bridge-otel")
+	implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+	implementation("io.micrometer:micrometer-registry-prometheus")
+	// Pinned: the Boot BOM does not manage it. 2.15.0-alpha is built for OpenTelemetry SDK 1.49.0, the BOM version.
+	implementation("io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:2.15.0-alpha")
 	implementation("com.github.ben-manes.caffeine:caffeine")
 	implementation("io.jsonwebtoken:jjwt-api:0.12.6")
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")

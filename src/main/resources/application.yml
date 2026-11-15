@@ -15,6 +15,15 @@ spring:
     gateway:
       server:
         webflux:
+          # Do not forward an internet baggage header to the services. Clients must not push baggage entries into them.
+          default-filters:
+            - RemoveRequestHeader=baggage
+          # Explicit: the metadata default (false) and the auto-configuration (matchIfMissing=true) disagree.
+          metrics:
+            enabled: true
+          # Client span and traceparent on routed calls.
+          observability:
+            enabled: true
           routes:
             # Before auth_api_route: the first matching route wins. Stricter limit against password guessing.
             - id: auth_login_route
@@ -70,6 +79,10 @@ spring:
   application:
     name: jbh-gateway
 
+  reactor:
+    # Copies the trace context between threads in reactive code. Without it, logs miss traceId and spanId.
+    context-propagation: auto
+
 server:
   port: ${JBH_GATEWAY_SERVER_PORT:8080}
 
@@ -77,9 +90,57 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus
+  # No route matches /actuator/**, and the JWT filter only runs on routed requests. Keep it that way.
+  tracing:
+    # Export is gated by OTEL_SDK_DISABLED (see jbh.otel). Tracing itself stays on: trace ids, X-Trace-Id, log ids.
+    sampling:
+      probability: ${OTEL_TRACES_SAMPLER_ARG:1.0}
+    baggage:
+      # Boot does not read or write baggage. The gateway default filter also removes the header.
+      enabled: false
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:14317}
+      # Boot default is http. Alloy takes gRPC, which has no path suffix.
+      transport: grpc
+      export:
+        enabled: ${jbh.otel.export-enabled}
+    logging:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:14317}
+      transport: grpc
+      export:
+        enabled: ${jbh.otel.export-enabled}
+  opentelemetry:
+    resource-attributes:
+      "[service.namespace]": jbh
+      "[deployment.environment.name]": ${JBH_ENV:local}
+      "[service.version]": ${JBH_SERVICE_VERSION:unknown}
+  metrics:
+    tags:
+      service: jbh-gateway
+      env: ${JBH_ENV:local}
+    distribution:
+      # Whole "ms" values only: Micrometer parses "2.5s" as invalid, so 2.5 s is written 2500ms.
+      slo:
+        "[http.server.requests]": 5ms,10ms,25ms,50ms,100ms,250ms,500ms,1000ms,2500ms,5000ms,10000ms
+        "[spring.cloud.gateway.requests]": 5ms,10ms,25ms,50ms,100ms,250ms,500ms,1000ms,2500ms,5000ms,10000ms
+
+logging:
+  structured:
+    ecs:
+      service:
+        environment: ${JBH_ENV:local}
+        version: ${JBH_SERVICE_VERSION:unknown}
 
 jbh:
+  otel:
+    # Placeholders cannot negate a value. This table maps OTEL_SDK_DISABLED to "is export on?".
+    # Only the exact value "false" turns export on. Unset, empty or any other value finds no key and falls back to false.
+    export-enabled-when-sdk-disabled:
+      "true": false
+      "false": true
+    export-enabled: ${jbh.otel.export-enabled-when-sdk-disabled.${OTEL_SDK_DISABLED:true}:false}
   rate-limit:
     # Comma-separated CIDRs allowed to set X-Forwarded-For (production: the Docker network "edge").
     trusted-proxies: ${JBH_TRUSTED_PROXIES:}
