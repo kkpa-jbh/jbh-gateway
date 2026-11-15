@@ -5,28 +5,29 @@
   "module": "src",
   "roadmap": null,
   "request": "JBH-55 section 3 (sub-issue JBH-59, record as git.ticket). Plan: ../kkpa/tickets/JBH-55/JBH-55.md section 3. Fixed names from section 1: OTEL_EXPORTER_OTLP_ENDPOINT=http://jbh-alloy:4317 (Docker), http://localhost:14317 (IDE), OTEL_SDK_DISABLED=false, JBH_ENV=local. Start from an up-to-date main.",
-  "status": "in-progress",
+  "status": "applied",
   "rollup": {
-    "current": [],
+    "current": [
+      "3.3"
+    ],
     "pending": [
+      "4.2"
+    ],
+    "blocked": [],
+    "done": [
+      "1.1",
+      "1.2",
       "2.1",
       "2.2",
       "2.3",
       "2.4",
       "3.1",
       "3.2",
-      "3.3",
-      "4.1",
-      "4.2"
-    ],
-    "blocked": [],
-    "done": [
-      "1.1",
-      "1.2"
+      "4.1"
     ]
   },
   "created_at": "2026-11-15T20:02:21Z",
-  "updated_at": "2026-11-15T20:04:42Z",
+  "updated_at": "2026-11-15T20:07:20Z",
   "leader": {
     "assistant": "Claude Code",
     "model": "claude-opus-5-5"
@@ -104,14 +105,23 @@
         "1.1"
       ],
       "parallel_ok": true,
-      "status": "pending",
-      "agent": null,
-      "model": null,
-      "started_at": null,
-      "completed_at": null,
-      "duration_seconds": null,
-      "notes": null,
-      "budget": null
+      "status": "done",
+      "agent": "src",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T20:05:22Z",
+      "completed_at": "2026-11-15T20:06:08Z",
+      "duration_seconds": 46,
+      "notes": "TraceIdResponseFilter: WebFilter, HIGHEST_PRECEDENCE, sets X-Trace-Id in beforeCommit from the server observation TracingContext; never throws.",
+      "budget": {
+        "five_hour_pct_start": 64,
+        "five_hour_pct_end": 75,
+        "five_hour_pct_delta": 11,
+        "cost_usd_delta": 1.0871,
+        "context_pct_end": 21,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave 2 delta shared by 2.1-2.4, 3.1; includes leader build and docs work"
+      }
     },
     {
       "id": "2.2",
@@ -121,14 +131,23 @@
         "1.1"
       ],
       "parallel_ok": true,
-      "status": "pending",
-      "agent": null,
-      "model": null,
-      "started_at": null,
-      "completed_at": null,
-      "duration_seconds": null,
-      "notes": null,
-      "budget": null
+      "status": "done",
+      "agent": "src",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T20:05:22Z",
+      "completed_at": "2026-11-15T20:06:08Z",
+      "duration_seconds": 46,
+      "notes": "OpenTelemetryAppenderConfig: InitializingBean calling OpenTelemetryAppender.install(openTelemetry).",
+      "budget": {
+        "five_hour_pct_start": 64,
+        "five_hour_pct_end": 75,
+        "five_hour_pct_delta": 11,
+        "cost_usd_delta": 1.0871,
+        "context_pct_end": 21,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave 2 delta shared by 2.1-2.4, 3.1; includes leader build and docs work"
+      }
     },
     {
       "id": "2.3",
@@ -138,14 +157,23 @@
         "1.1"
       ],
       "parallel_ok": true,
-      "status": "pending",
-      "agent": null,
-      "model": null,
-      "started_at": null,
-      "completed_at": null,
-      "duration_seconds": null,
-      "notes": null,
-      "budget": null
+      "status": "done",
+      "agent": "src",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T20:05:22Z",
+      "completed_at": "2026-11-15T20:06:08Z",
+      "duration_seconds": 46,
+      "notes": "GatewayClientUriObservationFilter: for GatewayContext, http.uri = scheme://authority/path (no query). GatewayContext lives in spring-cloud-gateway-server 4.3.0, not -webflux (design named the wrong jar).",
+      "budget": {
+        "five_hour_pct_start": 64,
+        "five_hour_pct_end": 75,
+        "five_hour_pct_delta": 11,
+        "cost_usd_delta": 1.0871,
+        "context_pct_end": 21,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave 2 delta shared by 2.1-2.4, 3.1; includes leader build and docs work"
+      }
     },
     {
       "id": "2.4",
@@ -155,14 +183,23 @@
         "1.1"
       ],
       "parallel_ok": true,
-      "status": "pending",
-      "agent": null,
-      "model": null,
-      "started_at": null,
-      "completed_at": null,
-      "duration_seconds": null,
-      "notes": null,
-      "budget": null
+      "status": "done",
+      "agent": "src",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T20:05:22Z",
+      "completed_at": "2026-11-15T20:06:08Z",
+      "duration_seconds": 46,
+      "notes": "logback-spring.xml: text with traceId/spanId for !prod, ECS StructuredLogEncoder for prod, OTEL appender on root, exporter loggers console-only (additivity=false).",
+      "budget": {
+        "five_hour_pct_start": 64,
+        "five_hour_pct_end": 75,
+        "five_hour_pct_delta": 11,
+        "cost_usd_delta": 1.0871,
+        "context_pct_end": 21,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave 2 delta shared by 2.1-2.4, 3.1; includes leader build and docs work"
+      }
     },
     {
       "id": "3.1",
@@ -176,14 +213,23 @@
         "2.4"
       ],
       "parallel_ok": false,
-      "status": "pending",
-      "agent": null,
-      "model": null,
-      "started_at": null,
-      "completed_at": null,
-      "duration_seconds": null,
-      "notes": null,
-      "budget": null
+      "status": "done",
+      "agent": "src",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T20:05:22Z",
+      "completed_at": "2026-11-15T20:06:08Z",
+      "duration_seconds": 46,
+      "notes": "Static review: only /jbh-api/** routes, no locator code, no new log statements, complexity well under limits.",
+      "budget": {
+        "five_hour_pct_start": 64,
+        "five_hour_pct_end": 75,
+        "five_hour_pct_delta": 11,
+        "cost_usd_delta": 1.0871,
+        "context_pct_end": 21,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave 2 delta shared by 2.1-2.4, 3.1; includes leader build and docs work"
+      }
     },
     {
       "id": "3.2",
@@ -193,13 +239,13 @@
         "3.1"
       ],
       "parallel_ok": false,
-      "status": "pending",
-      "agent": null,
-      "model": null,
-      "started_at": null,
-      "completed_at": null,
-      "duration_seconds": null,
-      "notes": null,
+      "status": "done",
+      "agent": "leader",
+      "model": "claude-opus-5-5",
+      "started_at": "2026-11-15T20:07:00Z",
+      "completed_at": "2026-11-15T20:07:20Z",
+      "duration_seconds": 20,
+      "notes": "./gradlew build -q exit 0 (22 tests, 0 failures); detekt complexity exit 0.",
       "budget": null
     },
     {
@@ -210,13 +256,13 @@
         "3.2"
       ],
       "parallel_ok": false,
-      "status": "pending",
-      "agent": null,
+      "status": "awaiting-user-verification",
+      "agent": "user",
       "model": null,
       "started_at": null,
       "completed_at": null,
       "duration_seconds": null,
-      "notes": null,
+      "notes": "Manual checks M1-M14 need running services (Alloy, LGTM, iam, Consul); the leader never starts services.",
       "budget": null
     },
     {
@@ -225,13 +271,13 @@
       "module": "src",
       "depends_on": [],
       "parallel_ok": true,
-      "status": "pending",
-      "agent": null,
-      "model": null,
-      "started_at": null,
-      "completed_at": null,
-      "duration_seconds": null,
-      "notes": null,
+      "status": "done",
+      "agent": "leader",
+      "model": "claude-opus-5-5",
+      "started_at": "2026-11-15T20:06:30Z",
+      "completed_at": "2026-11-15T20:07:20Z",
+      "duration_seconds": 50,
+      "notes": "README.md and CLAUDE.md: Observability section, env vars, local check, /actuator/** rule, code structure, sync trigger line.",
       "budget": null
     },
     {
@@ -368,7 +414,17 @@
     {
       "at": "2026-11-15T20:04:42Z",
       "agent": "leader",
-      "event": "wave 1 verified by the leader (assistantRunsTests): ./gradlew build -q exit 0, 22 tests 0 failures; detekt complexity exit 0"
+      "event": "wave 1 verified by the leader (assistantRunsTests): ./gradlew build -q exit 0, 22 tests 0 failures; detekt complexity exit 0; wave-1 commit 99755a4"
+    },
+    {
+      "at": "2026-11-15T20:04:57Z",
+      "agent": "leader",
+      "event": "wave 2 dispatched: tasks 2.1, 2.2, 2.3, 2.4, 3.1 to one serial src worker (sonnet)"
+    },
+    {
+      "at": "2026-11-15T20:07:20Z",
+      "agent": "leader",
+      "event": "wave 2 verified by the leader (assistantRunsTests): ./gradlew build -q exit 0, 22 tests 0 failures; detekt complexity exit 0. 3.3 waits for the user (needs running services)"
     }
   ]
 }

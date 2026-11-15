@@ -11,22 +11,22 @@ No test blueprint group. The JBH-55 plan excludes unit tests and this change has
 
 The four tasks touch different files. They run in parallel once 1.1 is done.
 
-- [ ] 2.1 `src/main/kotlin/com/kkpa/jbh_gateway/filter/TraceIdResponseFilter.kt`: `WebFilter`, order `Ordered.HIGHEST_PRECEDENCE`; registers `response.beforeCommit` that sets `X-Trace-Id` from the server observation context (D5); no header when no trace id; never throws. Depends on: 1.1.
-- [ ] 2.2 `src/main/kotlin/com/kkpa/jbh_gateway/config/OpenTelemetryAppenderConfig.kt`: calls `OpenTelemetryAppender.install(openTelemetry)` at bean start (D13). Depends on: 1.1.
-- [ ] 2.3 `src/main/kotlin/com/kkpa/jbh_gateway/observation/` one `ObservationFilter` bean that replaces the gateway client attribute `http.uri` with the URI without query (D9). Confirm the `GatewayContext` API in the jar first. Depends on: 1.1.
-- [ ] 2.4 `src/main/resources/logback-spring.xml`: console text for non-prod, ECS JSON for `prod`, `OpenTelemetryAppender` on root in every profile, `additivity="false"` console-only loggers for `io.opentelemetry`, `io.grpc`, `okhttp3`, `okio` (D12). Depends on: 1.1.
+- [x] 2.1 `src/main/kotlin/com/kkpa/jbh_gateway/filter/TraceIdResponseFilter.kt`: `WebFilter`, order `Ordered.HIGHEST_PRECEDENCE`; registers `response.beforeCommit` that sets `X-Trace-Id` from the server observation context (D5); no header when no trace id; never throws. Depends on: 1.1.
+- [x] 2.2 `src/main/kotlin/com/kkpa/jbh_gateway/config/OpenTelemetryAppenderConfig.kt`: calls `OpenTelemetryAppender.install(openTelemetry)` at bean start (D13). Depends on: 1.1.
+- [x] 2.3 `src/main/kotlin/com/kkpa/jbh_gateway/observation/` one `ObservationFilter` bean that replaces the gateway client attribute `http.uri` with the URI without query (D9). Confirm the `GatewayContext` API in the jar first. Depends on: 1.1.
+- [x] 2.4 `src/main/resources/logback-spring.xml`: console text for non-prod, ECS JSON for `prod`, `OpenTelemetryAppender` on root in every profile, `additivity="false"` console-only loggers for `io.opentelemetry`, `io.grpc`, `okhttp3`, `okio` (D12). Depends on: 1.1.
 
 ## 3. Verification
 
-- [ ] 3.1 Static review by the worker (no command run): no route matches `/actuator/**`; no new log statement writes a token, cookie, `Authorization` or `X-Forwarded-For`; every new function is far below cyclomatic 10 and cognitive 15; file sizes. Depends on: 1.2, 2.1, 2.2, 2.3, 2.4.
-- [ ] 3.2 Leader runs the build and the existing suite (`./gradlew build`, `./gradlew test`; `JbhGatewayApplicationTests` must stay green) and the complexity check (`detekt --input src/main/kotlin --config config/detekt/complexity.yml`). Depends on: 3.1. Owner: leader.
+- [x] 3.1 Static review by the worker (no command run): no route matches `/actuator/**`; no new log statement writes a token, cookie, `Authorization` or `X-Forwarded-For`; every new function is far below cyclomatic 10 and cognitive 15; file sizes. Depends on: 1.2, 2.1, 2.2, 2.3, 2.4.
+- [x] 3.2 Leader runs the build and the existing suite (`./gradlew build`, `./gradlew test`; `JbhGatewayApplicationTests` must stay green) and the complexity check (`detekt --input src/main/kotlin --config config/detekt/complexity.yml`). Depends on: 3.1. Owner: leader.
 - [ ] 3.3 User runs the manual checks M1 to M14 from design.md "Test contract" and reports the series count (M14). Depends on: 3.2.
 
 ## 4. Docs (leader)
 
 Root docs are leader-owned. These tasks run in parallel with each other and with group 2.
 
-- [ ] 4.1 `CLAUDE.md` and `README.md`: new "Observability" section: signals (trace, Prometheus metrics, OTLP logs, `X-Trace-Id`), env vars (`OTEL_SDK_DISABLED`, `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_TRACES_SAMPLER_ARG`, `JBH_ENV`, `JBH_SERVICE_VERSION`), the local check (M1, M6, M11, M12), the export gate rule (D1), and the security rule: no route may match `/actuator/**`; `/actuator/prometheus` has no JWT and is reachable only from Docker networks because Caddy forwards only `/jbh-api/*`. Also update the "Actuator Endpoints" and "Code Structure" lines. Depends on: none. Owner: leader.
+- [x] 4.1 `CLAUDE.md` and `README.md`: new "Observability" section: signals (trace, Prometheus metrics, OTLP logs, `X-Trace-Id`), env vars (`OTEL_SDK_DISABLED`, `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_TRACES_SAMPLER_ARG`, `JBH_ENV`, `JBH_SERVICE_VERSION`), the local check (M1, M6, M11, M12), the export gate rule (D1), and the security rule: no route may match `/actuator/**`; `/actuator/prometheus` has no JWT and is reachable only from Docker networks because Caddy forwards only `/jbh-api/*`. Also update the "Actuator Endpoints" and "Code Structure" lines. Depends on: none. Owner: leader.
 - [ ] 4.2 `../jbh-deploy/README.md`, "Frontend to gateway": one line that every gateway response carries `X-Trace-Id` (the W3C trace id). Commit it in the `jbh-deploy` repo as a separate commit. Depends on: none. Owner: leader.
 
 Size estimate: 13 files, ~650 changed lines (tests and docs included)
