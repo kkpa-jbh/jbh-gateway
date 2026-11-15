@@ -27,6 +27,6 @@ The four tasks touch different files. They run in parallel once 1.1 is done.
 Root docs are leader-owned. These tasks run in parallel with each other and with group 2.
 
 - [x] 4.1 `CLAUDE.md` and `README.md`: new "Observability" section: signals (trace, Prometheus metrics, OTLP logs, `X-Trace-Id`), env vars (`OTEL_SDK_DISABLED`, `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_TRACES_SAMPLER_ARG`, `JBH_ENV`, `JBH_SERVICE_VERSION`), the local check (M1, M6, M11, M12), the export gate rule (D1), and the security rule: no route may match `/actuator/**`; `/actuator/prometheus` has no JWT and is reachable only from Docker networks because Caddy forwards only `/jbh-api/*`. Also update the "Actuator Endpoints" and "Code Structure" lines. Depends on: none. Owner: leader.
-- [ ] 4.2 `../jbh-deploy/README.md`, "Frontend to gateway": one line that every gateway response carries `X-Trace-Id` (the W3C trace id). Commit it in the `jbh-deploy` repo as a separate commit. Depends on: none. Owner: leader.
+- [x] 4.2 `../jbh-deploy/README.md`, "Frontend to gateway": one line that every gateway response carries `X-Trace-Id` (the W3C trace id). Commit it in the `jbh-deploy` repo as a separate commit. Depends on: none. Owner: leader.
 
 Size estimate: 13 files, ~650 changed lines (tests and docs included)

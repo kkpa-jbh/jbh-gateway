@@ -5,14 +5,12 @@
   "module": "src",
   "roadmap": null,
   "request": "JBH-55 section 3 (sub-issue JBH-59, record as git.ticket). Plan: ../kkpa/tickets/JBH-55/JBH-55.md section 3. Fixed names from section 1: OTEL_EXPORTER_OTLP_ENDPOINT=http://jbh-alloy:4317 (Docker), http://localhost:14317 (IDE), OTEL_SDK_DISABLED=false, JBH_ENV=local. Start from an up-to-date main.",
-  "status": "applied",
+  "status": "in-review",
   "rollup": {
     "current": [
       "3.3"
     ],
-    "pending": [
-      "4.2"
-    ],
+    "pending": [],
     "blocked": [],
     "done": [
       "1.1",
@@ -23,11 +21,12 @@
       "2.4",
       "3.1",
       "3.2",
-      "4.1"
+      "4.1",
+      "4.2"
     ]
   },
   "created_at": "2026-11-15T20:02:21Z",
-  "updated_at": "2026-11-15T20:07:20Z",
+  "updated_at": "2026-11-15T20:20:00Z",
   "leader": {
     "assistant": "Claude Code",
     "model": "claude-opus-5-5"
@@ -286,21 +285,46 @@
       "module": "src",
       "depends_on": [],
       "parallel_ok": true,
-      "status": "pending",
-      "agent": null,
-      "model": null,
-      "started_at": null,
-      "completed_at": null,
-      "duration_seconds": null,
-      "notes": null,
+      "status": "done",
+      "agent": "leader",
+      "model": "claude-opus-5-5",
+      "started_at": "2026-11-15T20:10:40Z",
+      "completed_at": "2026-11-15T20:10:40Z",
+      "duration_seconds": 0,
+      "notes": "Exact line sent to the jbh-leader session for section 8 (decision D11). No edit in jbh-deploy from this session.",
       "budget": null
     }
   ],
   "review": {
-    "status": "pending",
-    "agent": null,
-    "brief": null,
-    "rounds": []
+    "status": "reviewer-approved",
+    "agent": "src-reviewer",
+    "brief": "Change src-add-observability (JBH-59), base 5f371cf, code commits 99755a4 and f4d106d. User decisions to hold the diff to: (1) OTEL_SDK_DISABLED gates only OTLP export (management.otlp.{tracing,logging}.export.enabled via the jbh.otel lookup); management.tracing.enabled stays on; any value but exact 'false' = export off, never a start failure. (2) SRP only, no new interfaces of ours. (3) Baggage dropped by config: management.tracing.baggage.enabled=false + default filter RemoveRequestHeader=baggage. (4) D9 ObservationFilter approved: client span http.uri without query. (5) Size cap exceeded, accepted. No database change. No unit tests (plan excludes them); test_first skipped. Check against design.md D1-D17: X-Trace-Id on every response incl. 401/404/429/5xx (WebFilter, beforeCommit, observation context); shared SLO buckets as whole ms; no user id/email/IP/raw path in metric labels; no token/cookie/Authorization/X-Forwarded-For in logs or spans; no route matches /actuator/**; logback exporter loggers never reach the OTEL appender; pinned appender 2.15.0-alpha matches OTel SDK 1.49.0. Signals: assistant-run by the leader: ./gradlew build -q exit 0 (22 tests, 0 failures, after each wave), detekt complexity exit 0, openspec validate --strict OK. Not run (need services, user task 3.3): manual checks M1-M14. Known design-vs-jar difference: GatewayContext is in spring-cloud-gateway-server 4.3.0, not -webflux. Security-Gate: run (user decision D10). Dispatch values: Performance-Profile none; Test-Execution-Policy default (assistant runs nothing; leader runs build/suite); Test-First on (skipped); Language English (B2).",
+    "rounds": [
+      {
+        "round": 1,
+        "at": "2026-11-15T20:20:00Z",
+        "verdict": "approved",
+        "findings": [],
+        "security": {
+          "status": "passed",
+          "ran_at": "2026-11-15T20:20:00Z",
+          "scope": "origin/HEAD",
+          "findings": [],
+          "note": "No exploitable issue on added lines. Prometheus endpoint without JWT is the documented, user-accepted design (reach limited by Caddy); no PII in tags or span attributes."
+        },
+        "note": "Docs read: CLAUDE.md, design-principles.md, lenses.md, design.md, spec.md, tasks.md. Task 3.3 (M1-M14) stays awaiting-user-verification; status is honest.",
+        "duration_seconds": 71,
+        "budget": {
+          "five_hour_pct_start": 77,
+          "five_hour_pct_end": 82,
+          "five_hour_pct_delta": 5,
+          "cost_usd_delta": 0.5767,
+          "context_pct_end": 22,
+          "source": "statusline-cache",
+          "approx": false
+        }
+      }
+    ]
   },
   "decisions": [
     {
@@ -383,6 +407,33 @@
       "decision": "Used leader bracket timestamps for 1.1/1.2 instead of re-dispatching",
       "why": "Worker reported placeholder times; work itself complete and verified; re-dispatch costs more than it gives",
       "covered_by": null
+    },
+    {
+      "id": "D10",
+      "at": "2026-11-15T20:10:40Z",
+      "scope": "review:security-gate",
+      "made_by": "user",
+      "decision": "Run /security-review in the review",
+      "why": "Diff adds dependencies, changes headers and log export, exposes /actuator/prometheus without JWT",
+      "covered_by": "Step 7 security gate"
+    },
+    {
+      "id": "D11",
+      "at": "2026-11-15T20:10:40Z",
+      "scope": "task:4.2",
+      "made_by": "user",
+      "decision": "Hand the jbh-deploy/README.md X-Trace-Id line to the leader session (section 8) instead of a PR from here",
+      "why": "Another session works in jbh-deploy; avoids two sessions editing one file",
+      "covered_by": null
+    },
+    {
+      "id": "D12",
+      "at": "2026-11-15T20:19:45Z",
+      "scope": "review:status",
+      "made_by": "user",
+      "decision": "Leader copies the reviewer's round 1 verdict into the top-level status",
+      "why": "SKILL.md and the reviewer agent file conflict on who writes it; verdict already recorded by the reviewer",
+      "covered_by": null
     }
   ],
   "events": [
@@ -424,7 +475,37 @@
     {
       "at": "2026-11-15T20:07:20Z",
       "agent": "leader",
-      "event": "wave 2 verified by the leader (assistantRunsTests): ./gradlew build -q exit 0, 22 tests 0 failures; detekt complexity exit 0. 3.3 waits for the user (needs running services)"
+      "event": "wave 2 verified by the leader (assistantRunsTests): ./gradlew build -q exit 0, 22 tests 0 failures; detekt complexity exit 0. 3.3 waits for the user (needs running services); wave-2 commit f4d106d"
+    },
+    {
+      "at": "2026-11-15T20:10:40Z",
+      "agent": "leader",
+      "event": "verified: openspec validate --strict OK; real size 293 lines / 8 files without openspec (1075 / 15 with artifacts and progress.json) vs estimate ~650 / 13"
+    },
+    {
+      "at": "2026-11-15T20:10:40Z",
+      "agent": "leader",
+      "event": "review round 1 dispatched: src-reviewer (sonnet), Security-Gate: run"
+    },
+    {
+      "at": "2026-11-15T20:11:51Z",
+      "agent": "leader",
+      "event": "jbh-leader confirmed: the jbh-deploy README line, series estimate and JBH_SERVICE_VERSION are in plan section 8"
+    },
+    {
+      "at": "2026-11-15T20:11:51Z",
+      "agent": "leader",
+      "event": "review round 1: approved, security passed, no findings"
+    },
+    {
+      "at": "2026-11-15T20:19:45Z",
+      "agent": "leader",
+      "event": "rule conflict: SKILL.md says only the reviewer sets change status reviewer-approved; kkpa-module-reviewer.md limits it to review.status/rounds. Reviewer declined. Leader copied the round 1 verdict per user decision D12. Fix the skill or agent file."
+    },
+    {
+      "at": "2026-11-15T20:20:00Z",
+      "agent": "leader",
+      "event": "status kept in-review: check-progress.py rejects reviewer-approved while task 3.3 (user manual checks M1-M14) is awaiting-user-verification. Set reviewer-approved after the user reports 3.3 (D12 applies)."
     }
   ]
 }
