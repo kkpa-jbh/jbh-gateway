@@ -45,7 +45,7 @@ The gateway routes requests to backend microservices via Consul service discover
 - `/jbh-api/auth/**` → `jbh-iam-service` (public)
 - `/jbh-api/users/**`, `/jbh-api/user-groups/**` → `jbh-iam-service` (protected)
 - `/jbh-api/finance/**`, `/jbh-api/products/**`, `/jbh-api/preferences/**` → `jbh-personal-finance` (protected)
-- `/jbh-api/notifications/**` → `jbh-personal-finance` (protected; notifications is a module inside the finance app, not a separate service)
+- `/jbh-api/notifications/**` → `jbh-notification` (protected; its own service, no longer a module inside the finance app)
 
 ### Security Model
 
@@ -99,6 +99,14 @@ Consul integration:
 
 **Actuator Endpoints:**
 Available at `/actuator/`: `health`, `info` only
+
+## Pipeline config (kkpa-orchestrate-change)
+
+- **Modules-Root:** `.` (one module: `src`. Root docs like `README.md` and `CLAUDE.md` are leader-owned)
+- **Doc-Pack:** `CLAUDE.md`
+- **Complexity-Check:** `detekt --input src/main/kotlin --config config/detekt/complexity.yml` (detekt CLI, `brew install detekt`)
+- **Design-Gates:** `database`
+- **Git-Strategy:** `auto`
 
 ## System map sync (`../jbh-deploy/README.md`)
 

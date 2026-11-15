@@ -1,51 +1,79 @@
-# Builds the jbh-gateway image and pushes it to GHCR, tagged with the git SHA.
+# Image: builds the jbh-gateway Docker image and pushes it to GHCR (GitHub Container Registry).
+# It runs after each merge into main, or by hand.
+# Each image gets two tags: the git SHA (one fixed version) and "latest".
+# The deploy (jbh-deploy repo) pulls the image by its SHA tag. The VPS never builds it.
+
+# The name shown in the GitHub "Actions" tab.
 name: Image
 
 on:
+  # Adds a "Run workflow" button in the Actions tab, to build an image by hand.
   workflow_dispatch:
+  # Runs on every push to main. A merged PR is a push to main, so this runs after each merge.
   push:
     branches: [ main ]
 
+# What the automatic GITHUB_TOKEN may do in this run. Every permission not listed is "none".
+# - contents: read   -> download the code.
+# - packages: write  -> push the image to GHCR and delete old image versions.
 permissions:
   contents: read
   packages: write
 
 jobs:
+  # "image" is the job id. Each job gets a fresh, empty Ubuntu VM that is deleted after.
   image:
     runs-on: ubuntu-latest
     steps:
+      # The VM starts empty. This step downloads the code of the pushed commit into it.
       - uses: actions/checkout@v4
 
+      # Installs Java 21 (Temurin build). Gradle needs it to compile the Kotlin code.
       - uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
 
+      # Sets up Gradle and caches its files between runs,
+      # so Gradle does not download every dependency again each time.
       - uses: gradle/actions/setup-gradle@v4
 
+      # Builds the runnable Spring Boot jar in build/libs/. The Dockerfile copies this jar.
+      # --no-daemon: no Gradle background process. The VM is deleted after the run anyway.
+      # The tests do not run here: bootJar only compiles and packages.
       - name: Build boot jar
         run: ./gradlew --no-daemon bootJar
 
+      # Logs Docker in to ghcr.io, so the next step can push.
+      # username: the GitHub user or bot that started the run.
+      # password: GITHUB_TOKEN. GitHub creates it for each run; it is not a secret you add by hand.
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Builds the image from the Dockerfile in the repo root and pushes it to GHCR.
+      # context: . -> the repo root is the build folder (the Dockerfile and build/libs/ are there).
+      # push: true -> upload the image after the build.
       - uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           # One version per push. Build attestations would add untagged versions that use up the 2 kept slots.
           provenance: false
+          # github.sha: the full commit SHA of this run. "latest" always points to the newest build.
           tags: |
             ghcr.io/kkpa-jbh/jbh-gateway:${{ github.sha }}
             ghcr.io/kkpa-jbh/jbh-gateway:latest
 
       # GitHub Free: 500 MB for private packages. Keep the 2 newest images: the running one and one to roll back to.
+      # Uses the run's GITHUB_TOKEN by default (packages: write above).
       - name: Delete old images
         uses: actions/delete-package-versions@v5
         with:
+          # The GHCR package to clean: the jbh-gateway image.
           package-name: jbh-gateway
           package-type: container
+          # Every older version is deleted.
           min-versions-to-keep: 2

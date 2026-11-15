@@ -58,7 +58,7 @@ spring:
                     key-resolver: "#{@ipKeyResolver}"
 
             - id: notifications_api_route
-              uri: lb://jbh-personal-finance
+              uri: lb://jbh-notification
               predicates:
                 - Path=/jbh-api/notifications/**
               filters:

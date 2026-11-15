@@ -1,0 +1,25 @@
+# Complexity-Check for the kkpa-orchestrate-change pipeline.
+# Only two rules are on. detekt reports a method when its value is >= threshold,
+# so 11 means "cyclomatic over 10" and 16 means "cognitive over 15".
+comments: { active: false }
+coroutines: { active: false }
+empty-blocks: { active: false }
+exceptions: { active: false }
+naming: { active: false }
+performance: { active: false }
+potential-bugs: { active: false }
+style: { active: false }
+complexity:
+  active: true
+  CyclomaticComplexMethod: { active: true, threshold: 11 }
+  CognitiveComplexMethod: { active: true, threshold: 16 }
+  ComplexCondition: { active: false }
+  ComplexInterface: { active: false }
+  LargeClass: { active: false }
+  LongMethod: { active: false }
+  LongParameterList: { active: false }
+  NamedArguments: { active: false }
+  NestedBlockDepth: { active: false }
+  ReplaceSafeCallChainWithRun: { active: false }
+  StringLiteralDuplication: { active: false }
+  TooManyFunctions: { active: false }
