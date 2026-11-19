@@ -1,0 +1,539 @@
+{
+  "schema_version": 1,
+  "kind": "change",
+  "change": "src-add-observability",
+  "module": "src",
+  "roadmap": null,
+  "request": "JBH-55 section 3 (sub-issue JBH-59, record as git.ticket). Plan: ../kkpa/tickets/JBH-55/JBH-55.md section 3. Fixed names from section 1: OTEL_EXPORTER_OTLP_ENDPOINT=http://jbh-alloy:4317 (Docker), http://localhost:14317 (IDE), OTEL_SDK_DISABLED=false, JBH_ENV=local. Start from an up-to-date main.",
+  "status": "archived",
+  "rollup": {
+    "current": [],
+    "pending": [],
+    "blocked": [],
+    "done": [
+      "1.1",
+      "1.2",
+      "2.1",
+      "2.2",
+      "2.3",
+      "2.4",
+      "3.1",
+      "3.2",
+      "3.3",
+      "4.1",
+      "4.2"
+    ]
+  },
+  "created_at": "2026-11-15T20:02:21Z",
+  "updated_at": "2026-11-15T23:39:28Z",
+  "leader": {
+    "assistant": "Claude Code",
+    "model": "claude-opus-5-5"
+  },
+  "git": {
+    "strategy": "auto",
+    "branch": "ft/CH2-JBH-59-src-add-observability",
+    "base": "main",
+    "base_sha": "5f371cfcaac52c9d1d9cf6276030f5e3807ef310",
+    "ticket": "JBH-59",
+    "ticket_url": "https://linear.app/kkpa/issue/JBH-59/jbh-gateway-start-the-trace-prometheus-metrics-otlp-logs-trace-id",
+    "ticket_tracker": "linear",
+    "created_at": "2026-11-15T19:33:00Z"
+  },
+  "test_first": {
+    "status": "skipped",
+    "commit": null,
+    "tests": [],
+    "approved_at": null
+  },
+  "tasks": [
+    {
+      "id": "1.1",
+      "title": "build.gradle.kts: tracing bridge, OTLP exporter, Prometheus registry, pinned logback appender",
+      "module": "src",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "done",
+      "agent": "src",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T20:03:04Z",
+      "completed_at": "2026-11-15T20:04:42Z",
+      "duration_seconds": 98,
+      "notes": "Added tracing bridge, OTLP exporter, Prometheus registry (BOM); pinned logback appender 2.15.0-alpha (matches OTel SDK 1.49.0). context-propagation comes from micrometer-tracing 1.5.12.",
+      "budget": {
+        "five_hour_pct_start": 61,
+        "five_hour_pct_end": 64,
+        "five_hour_pct_delta": 3,
+        "cost_usd_delta": 0.5865,
+        "context_pct_end": 19,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave delta shared by 1.1+1.2; includes leader build run"
+      }
+    },
+    {
+      "id": "1.2",
+      "title": "application.yml: export gate, OTLP, tracing, baggage, metrics, resource attributes, gateway observability",
+      "module": "src",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "done",
+      "agent": "src",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T20:03:04Z",
+      "completed_at": "2026-11-15T20:04:42Z",
+      "duration_seconds": 98,
+      "notes": "All application.yml items from D1-D11 with why-comments; routes unchanged; no route matches /actuator/**.",
+      "budget": {
+        "five_hour_pct_start": 61,
+        "five_hour_pct_end": 64,
+        "five_hour_pct_delta": 3,
+        "cost_usd_delta": 0.5865,
+        "context_pct_end": 19,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave delta shared by 1.1+1.2; includes leader build run"
+      }
+    },
+    {
+      "id": "2.1",
+      "title": "TraceIdResponseFilter: X-Trace-Id on every response",
+      "module": "src",
+      "depends_on": [
+        "1.1"
+      ],
+      "parallel_ok": true,
+      "status": "done",
+      "agent": "src",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T20:05:22Z",
+      "completed_at": "2026-11-15T20:06:08Z",
+      "duration_seconds": 46,
+      "notes": "TraceIdResponseFilter: WebFilter, HIGHEST_PRECEDENCE, sets X-Trace-Id in beforeCommit from the server observation TracingContext; never throws.",
+      "budget": {
+        "five_hour_pct_start": 64,
+        "five_hour_pct_end": 75,
+        "five_hour_pct_delta": 11,
+        "cost_usd_delta": 1.0871,
+        "context_pct_end": 21,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave 2 delta shared by 2.1-2.4, 3.1; includes leader build and docs work"
+      }
+    },
+    {
+      "id": "2.2",
+      "title": "OpenTelemetryAppenderConfig: install the appender at start",
+      "module": "src",
+      "depends_on": [
+        "1.1"
+      ],
+      "parallel_ok": true,
+      "status": "done",
+      "agent": "src",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T20:05:22Z",
+      "completed_at": "2026-11-15T20:06:08Z",
+      "duration_seconds": 46,
+      "notes": "OpenTelemetryAppenderConfig: InitializingBean calling OpenTelemetryAppender.install(openTelemetry).",
+      "budget": {
+        "five_hour_pct_start": 64,
+        "five_hour_pct_end": 75,
+        "five_hour_pct_delta": 11,
+        "cost_usd_delta": 1.0871,
+        "context_pct_end": 21,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave 2 delta shared by 2.1-2.4, 3.1; includes leader build and docs work"
+      }
+    },
+    {
+      "id": "2.3",
+      "title": "ObservationFilter: drop the query from gateway client span http.uri",
+      "module": "src",
+      "depends_on": [
+        "1.1"
+      ],
+      "parallel_ok": true,
+      "status": "done",
+      "agent": "src",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T20:05:22Z",
+      "completed_at": "2026-11-15T20:06:08Z",
+      "duration_seconds": 46,
+      "notes": "GatewayClientUriObservationFilter: for GatewayContext, http.uri = scheme://authority/path (no query). GatewayContext lives in spring-cloud-gateway-server 4.3.0, not -webflux (design named the wrong jar).",
+      "budget": {
+        "five_hour_pct_start": 64,
+        "five_hour_pct_end": 75,
+        "five_hour_pct_delta": 11,
+        "cost_usd_delta": 1.0871,
+        "context_pct_end": 21,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave 2 delta shared by 2.1-2.4, 3.1; includes leader build and docs work"
+      }
+    },
+    {
+      "id": "2.4",
+      "title": "logback-spring.xml: text non-prod, ECS JSON prod, OTel appender, exporter loggers excluded",
+      "module": "src",
+      "depends_on": [
+        "1.1"
+      ],
+      "parallel_ok": true,
+      "status": "done",
+      "agent": "src",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T20:05:22Z",
+      "completed_at": "2026-11-15T20:06:08Z",
+      "duration_seconds": 46,
+      "notes": "logback-spring.xml: text with traceId/spanId for !prod, ECS StructuredLogEncoder for prod, OTEL appender on root, exporter loggers console-only (additivity=false).",
+      "budget": {
+        "five_hour_pct_start": 64,
+        "five_hour_pct_end": 75,
+        "five_hour_pct_delta": 11,
+        "cost_usd_delta": 1.0871,
+        "context_pct_end": 21,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave 2 delta shared by 2.1-2.4, 3.1; includes leader build and docs work"
+      }
+    },
+    {
+      "id": "3.1",
+      "title": "Static review: no /actuator/** route, no secrets logged, complexity, file sizes",
+      "module": "src",
+      "depends_on": [
+        "1.2",
+        "2.1",
+        "2.2",
+        "2.3",
+        "2.4"
+      ],
+      "parallel_ok": false,
+      "status": "done",
+      "agent": "src",
+      "model": "claude-sonnet-5-5",
+      "started_at": "2026-11-15T20:05:22Z",
+      "completed_at": "2026-11-15T20:06:08Z",
+      "duration_seconds": 46,
+      "notes": "Static review: only /jbh-api/** routes, no locator code, no new log statements, complexity well under limits.",
+      "budget": {
+        "five_hour_pct_start": 64,
+        "five_hour_pct_end": 75,
+        "five_hour_pct_delta": 11,
+        "cost_usd_delta": 1.0871,
+        "context_pct_end": 21,
+        "source": "statusline-cache",
+        "approx": true,
+        "note": "wave 2 delta shared by 2.1-2.4, 3.1; includes leader build and docs work"
+      }
+    },
+    {
+      "id": "3.2",
+      "title": "Leader runs build, suite and complexity check",
+      "module": "src",
+      "depends_on": [
+        "3.1"
+      ],
+      "parallel_ok": false,
+      "status": "done",
+      "agent": "leader",
+      "model": "claude-opus-5-5",
+      "started_at": "2026-11-15T20:07:00Z",
+      "completed_at": "2026-11-15T20:07:20Z",
+      "duration_seconds": 20,
+      "notes": "./gradlew build -q exit 0 (22 tests, 0 failures); detekt complexity exit 0.",
+      "budget": null
+    },
+    {
+      "id": "3.3",
+      "title": "User runs manual checks M1-M14 and reports the series count",
+      "module": "src",
+      "depends_on": [
+        "3.2"
+      ],
+      "parallel_ok": false,
+      "status": "done",
+      "agent": "user",
+      "model": null,
+      "started_at": null,
+      "completed_at": "2026-11-15T23:39:21Z",
+      "duration_seconds": null,
+      "notes": "User reported the manual checks: 'looks like is working'. Series count (M14) not reported.",
+      "budget": null
+    },
+    {
+      "id": "4.1",
+      "title": "CLAUDE.md and README.md Observability section",
+      "module": "src",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "done",
+      "agent": "leader",
+      "model": "claude-opus-5-5",
+      "started_at": "2026-11-15T20:06:30Z",
+      "completed_at": "2026-11-15T20:07:20Z",
+      "duration_seconds": 50,
+      "notes": "README.md and CLAUDE.md: Observability section, env vars, local check, /actuator/** rule, code structure, sync trigger line.",
+      "budget": null
+    },
+    {
+      "id": "4.2",
+      "title": "jbh-deploy/README.md: X-Trace-Id line in Frontend to gateway",
+      "module": "src",
+      "depends_on": [],
+      "parallel_ok": true,
+      "status": "done",
+      "agent": "leader",
+      "model": "claude-opus-5-5",
+      "started_at": "2026-11-15T20:10:40Z",
+      "completed_at": "2026-11-15T20:10:40Z",
+      "duration_seconds": 0,
+      "notes": "Exact line sent to the jbh-leader session for section 8 (decision D11). No edit in jbh-deploy from this session.",
+      "budget": null
+    }
+  ],
+  "review": {
+    "status": "reviewer-approved",
+    "agent": "src-reviewer",
+    "brief": "Change src-add-observability (JBH-59), base 5f371cf, code commits 99755a4 and f4d106d. User decisions to hold the diff to: (1) OTEL_SDK_DISABLED gates only OTLP export (management.otlp.{tracing,logging}.export.enabled via the jbh.otel lookup); management.tracing.enabled stays on; any value but exact 'false' = export off, never a start failure. (2) SRP only, no new interfaces of ours. (3) Baggage dropped by config: management.tracing.baggage.enabled=false + default filter RemoveRequestHeader=baggage. (4) D9 ObservationFilter approved: client span http.uri without query. (5) Size cap exceeded, accepted. No database change. No unit tests (plan excludes them); test_first skipped. Check against design.md D1-D17: X-Trace-Id on every response incl. 401/404/429/5xx (WebFilter, beforeCommit, observation context); shared SLO buckets as whole ms; no user id/email/IP/raw path in metric labels; no token/cookie/Authorization/X-Forwarded-For in logs or spans; no route matches /actuator/**; logback exporter loggers never reach the OTEL appender; pinned appender 2.15.0-alpha matches OTel SDK 1.49.0. Signals: assistant-run by the leader: ./gradlew build -q exit 0 (22 tests, 0 failures, after each wave), detekt complexity exit 0, openspec validate --strict OK. Not run (need services, user task 3.3): manual checks M1-M14. Known design-vs-jar difference: GatewayContext is in spring-cloud-gateway-server 4.3.0, not -webflux. Security-Gate: run (user decision D10). Dispatch values: Performance-Profile none; Test-Execution-Policy default (assistant runs nothing; leader runs build/suite); Test-First on (skipped); Language English (B2).",
+    "rounds": [
+      {
+        "round": 1,
+        "at": "2026-11-15T20:20:00Z",
+        "verdict": "approved",
+        "findings": [],
+        "security": {
+          "status": "passed",
+          "ran_at": "2026-11-15T20:20:00Z",
+          "scope": "origin/HEAD",
+          "findings": [],
+          "note": "No exploitable issue on added lines. Prometheus endpoint without JWT is the documented, user-accepted design (reach limited by Caddy); no PII in tags or span attributes."
+        },
+        "note": "Docs read: CLAUDE.md, design-principles.md, lenses.md, design.md, spec.md, tasks.md. Task 3.3 (M1-M14) stays awaiting-user-verification; status is honest.",
+        "duration_seconds": 71,
+        "budget": {
+          "five_hour_pct_start": 77,
+          "five_hour_pct_end": 82,
+          "five_hour_pct_delta": 5,
+          "cost_usd_delta": 0.5767,
+          "context_pct_end": 22,
+          "source": "statusline-cache",
+          "approx": false
+        }
+      }
+    ]
+  },
+  "decisions": [
+    {
+      "id": "D1",
+      "at": "2026-11-15T19:40:00Z",
+      "scope": "change",
+      "made_by": "user",
+      "decision": "OTEL_SDK_DISABLED gates only OTLP export; management.tracing.enabled stays on",
+      "why": "Trace id, X-Trace-Id and traceparent must work in prod before JBH-84 while nothing is sent",
+      "covered_by": "Step 2 interview; plan revised by the leader session for sections 3-6"
+    },
+    {
+      "id": "D2",
+      "at": "2026-11-15T19:42:00Z",
+      "scope": "change",
+      "made_by": "user",
+      "decision": "SOLID: SRP only, no new interfaces",
+      "why": "No real need for OCP/DIP in this change",
+      "covered_by": "Step 2 interview"
+    },
+    {
+      "id": "D3",
+      "at": "2026-11-15T19:42:00Z",
+      "scope": "change",
+      "made_by": "user",
+      "decision": "Drop incoming baggage by config (baggage.enabled=false + RemoveRequestHeader=baggage), not in the filter",
+      "why": "Trace context reads baggage before gateway filters; keeps the filter at one job",
+      "covered_by": "Step 2 interview"
+    },
+    {
+      "id": "D4",
+      "at": "2026-11-15T20:00:00Z",
+      "scope": "change",
+      "made_by": "user",
+      "decision": "Design briefing approved; size cap exceeded (~650 lines incl. ~350 artifact lines) accepted",
+      "why": "Code part is ~200 lines, easy to review whole",
+      "covered_by": "Step 3a"
+    },
+    {
+      "id": "D5",
+      "at": "2026-11-15T20:00:00Z",
+      "scope": "change",
+      "made_by": "user",
+      "decision": "Add design D9 ObservationFilter (4th new class) to strip the query from client span http.uri",
+      "why": "Plan rule: no personal data in span attributes; emails travel in query strings",
+      "covered_by": "Step 3a"
+    },
+    {
+      "id": "D6",
+      "at": "2026-11-15T20:01:00Z",
+      "scope": "concurrency",
+      "made_by": "leader",
+      "decision": "No race or sync risk in any task",
+      "why": "No shared state, no check-then-act, no new threads; install runs once; filters touch only their own exchange or context",
+      "covered_by": null
+    },
+    {
+      "id": "D7",
+      "at": "2026-11-15T20:02:00Z",
+      "scope": "change",
+      "made_by": "leader",
+      "decision": "test_first skipped",
+      "why": "Plan header excludes unit tests and the change has no unit-testable logic",
+      "covered_by": "JBH-55 plan header: Unit tests excluded"
+    },
+    {
+      "id": "D8",
+      "at": "2026-11-15T20:02:00Z",
+      "scope": "change",
+      "made_by": "leader",
+      "decision": "Do not move JBH-59 in Linear from this session",
+      "why": "Plan Execution Rules: only the leader session moves JBH-55 sub-issues; overrides the global pipeline-linear rule for this ticket",
+      "covered_by": "JBH-55 Execution Rules"
+    },
+    {
+      "id": "D9",
+      "at": "2026-11-15T20:04:42Z",
+      "scope": "task:1.1",
+      "made_by": "leader",
+      "decision": "Used leader bracket timestamps for 1.1/1.2 instead of re-dispatching",
+      "why": "Worker reported placeholder times; work itself complete and verified; re-dispatch costs more than it gives",
+      "covered_by": null
+    },
+    {
+      "id": "D10",
+      "at": "2026-11-15T20:10:40Z",
+      "scope": "review:security-gate",
+      "made_by": "user",
+      "decision": "Run /security-review in the review",
+      "why": "Diff adds dependencies, changes headers and log export, exposes /actuator/prometheus without JWT",
+      "covered_by": "Step 7 security gate"
+    },
+    {
+      "id": "D11",
+      "at": "2026-11-15T20:10:40Z",
+      "scope": "task:4.2",
+      "made_by": "user",
+      "decision": "Hand the jbh-deploy/README.md X-Trace-Id line to the leader session (section 8) instead of a PR from here",
+      "why": "Another session works in jbh-deploy; avoids two sessions editing one file",
+      "covered_by": null
+    },
+    {
+      "id": "D12",
+      "at": "2026-11-15T20:19:45Z",
+      "scope": "review:status",
+      "made_by": "user",
+      "decision": "Leader copies the reviewer's round 1 verdict into the top-level status",
+      "why": "SKILL.md and the reviewer agent file conflict on who writes it; verdict already recorded by the reviewer",
+      "covered_by": null
+    },
+    {
+      "id": "D13",
+      "at": "2026-11-15T23:39:21Z",
+      "scope": "task:3.3",
+      "made_by": "user",
+      "decision": "Manual checks M1-M14 accepted on the user's report",
+      "why": "User ran the checks with services up and reported 'looks like is working'; series count not given",
+      "covered_by": null
+    }
+  ],
+  "events": [
+    {
+      "at": "2026-11-15T19:33:00Z",
+      "agent": "leader",
+      "event": "branch ft/CH2-JBH-59-src-add-observability created off main 5f371cf; counter 2 -> 3"
+    },
+    {
+      "at": "2026-11-15T19:44:00Z",
+      "agent": "leader",
+      "event": "dispatched src worker (artifact mode, sonnet)"
+    },
+    {
+      "at": "2026-11-15T19:56:00Z",
+      "agent": "leader",
+      "event": "artifacts returned; openspec validate --strict passed; D1-D17 in design.md"
+    },
+    {
+      "at": "2026-11-15T20:02:21Z",
+      "agent": "leader",
+      "event": "briefing approved, concurrency check: none, progress.json created"
+    },
+    {
+      "at": "2026-11-15T20:03:04Z",
+      "agent": "leader",
+      "event": "wave 1 dispatched: tasks 1.1, 1.2 to src worker (sonnet), one serial worker"
+    },
+    {
+      "at": "2026-11-15T20:04:42Z",
+      "agent": "leader",
+      "event": "wave 1 verified by the leader (assistantRunsTests): ./gradlew build -q exit 0, 22 tests 0 failures; detekt complexity exit 0; wave-1 commit 99755a4"
+    },
+    {
+      "at": "2026-11-15T20:04:57Z",
+      "agent": "leader",
+      "event": "wave 2 dispatched: tasks 2.1, 2.2, 2.3, 2.4, 3.1 to one serial src worker (sonnet)"
+    },
+    {
+      "at": "2026-11-15T20:07:20Z",
+      "agent": "leader",
+      "event": "wave 2 verified by the leader (assistantRunsTests): ./gradlew build -q exit 0, 22 tests 0 failures; detekt complexity exit 0. 3.3 waits for the user (needs running services); wave-2 commit f4d106d"
+    },
+    {
+      "at": "2026-11-15T20:10:40Z",
+      "agent": "leader",
+      "event": "verified: openspec validate --strict OK; real size 293 lines / 8 files without openspec (1075 / 15 with artifacts and progress.json) vs estimate ~650 / 13"
+    },
+    {
+      "at": "2026-11-15T20:10:40Z",
+      "agent": "leader",
+      "event": "review round 1 dispatched: src-reviewer (sonnet), Security-Gate: run"
+    },
+    {
+      "at": "2026-11-15T20:11:51Z",
+      "agent": "leader",
+      "event": "jbh-leader confirmed: the jbh-deploy README line, series estimate and JBH_SERVICE_VERSION are in plan section 8"
+    },
+    {
+      "at": "2026-11-15T20:11:51Z",
+      "agent": "leader",
+      "event": "review round 1: approved, security passed, no findings"
+    },
+    {
+      "at": "2026-11-15T20:19:45Z",
+      "agent": "leader",
+      "event": "rule conflict: SKILL.md says only the reviewer sets change status reviewer-approved; kkpa-module-reviewer.md limits it to review.status/rounds. Reviewer declined. Leader copied the round 1 verdict per user decision D12. Fix the skill or agent file."
+    },
+    {
+      "at": "2026-11-15T20:20:00Z",
+      "agent": "leader",
+      "event": "status kept in-review: check-progress.py rejects reviewer-approved while task 3.3 (user manual checks M1-M14) is awaiting-user-verification. Set reviewer-approved after the user reports 3.3 (D12 applies)."
+    },
+    {
+      "at": "2026-11-15T23:12:44Z",
+      "agent": "leader",
+      "event": "pushed origin/ft/CH2-JBH-59-src-add-observability; draft PR #3 https://github.com/kkpa-jbh/jbh-gateway/pull/3 (user go-ahead). Archive waits for task 3.3."
+    },
+    {
+      "at": "2026-11-15T23:39:21Z",
+      "agent": "leader",
+      "event": "task 3.3 verified by the user (report: 'looks like is working'); series count not reported"
+    },
+    {
+      "at": "2026-11-15T23:39:21Z",
+      "agent": "leader",
+      "event": "status reviewer-approved copied from review round 1 (D12), now that all tasks are done"
+    },
+    {
+      "at": "2026-11-15T23:39:28Z",
+      "agent": "leader",
+      "event": "archived as 2026-11-15-src-add-observability; spec gateway-observability created (6 requirements)"
+    }
+  ]
+}

@@ -14,6 +14,7 @@ It serves as the entry point for microservices, providing routing, rate limiting
 - Consul for service discovery
 - Resilience4J for circuit breaking
 - Caffeine for in-memory caching
+- Micrometer Tracing (OpenTelemetry bridge, OTLP gRPC), Micrometer Prometheus registry, OTel Logback appender
 - Java 21 with GraalVM native image support
 
 ## Common Commands
@@ -82,7 +83,11 @@ Consul integration:
 - `config/JwtProperties.kt` - `jwt.*` properties (secret, token type claim)
 - `model/AuthErrorCode.kt`, `model/AuthErrorResponse.kt` - 401 error codes and body
 - `config/RateLimitConfig.kt` - Rate limiter beans (IP resolver + in-memory limiter)
-- `application.yml` - Gateway routes, Consul config, and filter configuration
+- `config/OpenTelemetryAppenderConfig.kt` - Installs the OTel Logback appender with the Spring `OpenTelemetry` bean
+- `filter/TraceIdResponseFilter.kt` - `WebFilter` that sets `X-Trace-Id` on every response
+- `observation/GatewayClientUriObservationFilter.kt` - Removes the query string from the client span `http.uri`
+- `application.yml` - Gateway routes, Consul config, filter configuration, tracing / metrics / OTLP config
+- `logback-spring.xml` - Text logs (non-prod) or ECS JSON (`prod`), plus the OTel appender
 
 ## Development Notes
 
@@ -98,7 +103,28 @@ Consul integration:
 4. New routes are protected by default. Add the path to `publicPaths` in `AuthorizationGlobalFilter` only if it must be public
 
 **Actuator Endpoints:**
-Available at `/actuator/`: `health`, `info` only
+Available at `/actuator/`: `health`, `info`, `prometheus` only.
+**No route may match `/actuator/**`.** `/actuator/prometheus` has no JWT check (the auth GlobalFilter runs only on
+routed requests). In production it is reachable only from Docker networks, because Caddy forwards only `/jbh-api/*`.
+
+## Observability
+
+Details, env vars and the local check: `README.md`, "Observability". System view: `../jbh-deploy/observability/README.md`.
+
+- **Traces:** Micrometer Tracing + OpenTelemetry bridge. The gateway continues an incoming `traceparent` or starts a
+  new trace; routed calls get a client span and send `traceparent` (Gateway observability). Sampling: `OTEL_TRACES_SAMPLER_ARG` (default `1.0`).
+- **Export gate:** `OTEL_SDK_DISABLED` (default `true`) stops only the OTLP export (`management.otlp.{tracing,logging}.export.enabled`,
+  through the lookup table `jbh.otel.*` in `application.yml`). Only the exact value `false` turns it on. Never map it to
+  `management.tracing.enabled`: that removes the trace id, `X-Trace-Id` and `traceparent`.
+- **OTLP:** gRPC, `OTEL_EXPORTER_OTLP_ENDPOINT` (default `http://localhost:14317`; Docker `http://jbh-alloy:4317`).
+- **Metrics:** `/actuator/prometheus`, tags `service=jbh-gateway`, `env=${JBH_ENV}`. Route latency: `spring.cloud.gateway.requests`
+  (tag `routeId`). SLO buckets must be whole `ms` values (`2500ms`, not `2.5s`: Micrometer rejects it and the gateway does not start).
+- **Logs:** `logback-spring.xml`: text with `traceId`/`spanId` except profile `prod` (ECS JSON on stdout); the OpenTelemetry
+  Logback appender in every profile. Exporter loggers (`io.opentelemetry`, `io.grpc`, ...) never reach that appender (no loop).
+- **`X-Trace-Id`:** a `WebFilter` at highest precedence sets it in `beforeCommit`, from the server observation context
+  (not the `Tracer` bean: no span exists yet when `filter()` runs). So 401, 404, 429 and 5xx get it too.
+- **Privacy:** incoming `baggage` is dropped by config; the client span attribute `http.uri` has no query string.
+  Never log or tag a token, cookie, `Authorization`, email, IP or raw path.
 
 ## Pipeline config (kkpa-orchestrate-change)
 
@@ -121,5 +147,6 @@ Triggers for this repo:
 - Add, remove, or change a route in `application.yml` (path, `lb://` target)
 - Change `publicPaths` or the JWT checks in `AuthorizationGlobalFilter` / `JwtValidator`
 - Change the port, the Consul service name, the JWT secret env, the rate limit, or CORS
+- Change a response header every client sees (`X-Trace-Id`), or the OTLP / metrics env vars
 
 If you are not sure a change counts, read `../jbh-deploy/README.md` and check whether any line is now wrong.

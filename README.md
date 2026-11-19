@@ -99,6 +99,62 @@ Main settings:
 
 Note: the Resilience4J dependency is present, but no route uses a `CircuitBreaker` filter yet.
 
+## Observability
+
+The gateway is where a trace starts when the browser did not start one (for example `curl`).
+It continues an incoming W3C `traceparent`, or starts a new trace. The whole system view is in
+`../jbh-deploy/observability/README.md`.
+
+| Signal | How | Where it goes |
+|--------|-----|---------------|
+| Traces | Micrometer Tracing + OpenTelemetry. One server span per request, one client span per routed call. `traceparent` goes to the services. | OTLP gRPC → Alloy → Tempo |
+| Metrics | `/actuator/prometheus`: `http_server_requests_*`, `spring_cloud_gateway_requests_*` (tag `routeId`), JVM, CPU. Tags `service`, `env`. | Alloy scrapes it → Prometheus |
+| Logs | `traceId` / `spanId` on every line. Text locally, ECS JSON on stdout with profile `prod`. The OpenTelemetry Logback appender sends them too. | OTLP gRPC → Alloy → Loki |
+| `X-Trace-Id` | Response header on **every** response (also 401, 404, 429, 5xx). Search it in Grafana → Explore → Tempo. | the client |
+
+### How the trace id is made
+
+- **The gateway code does not make the id.** The OpenTelemetry SDK does (`micrometer-tracing-bridge-otel`).
+- **Normal app use:** the browser (Faro) makes the id and sends it in `traceparent`. The gateway keeps it.
+- **No `traceparent`** (for example `curl`): the SDK makes a new random 128-bit id (32 hex characters). No custom `IdGenerator` exists.
+- **Routed calls** get a client span with the same id. `traceparent` goes to the service.
+- **Sampling does not remove the id.** A request that is not sampled still has a trace id and `X-Trace-Id`.
+- **`X-Trace-Id`** is set by `filter/TraceIdResponseFilter.kt`. It is a `WebFilter`, so it runs also for requests with no route.
+  It reads the id in `beforeCommit`, from the server observation context, because the server span does not exist yet when `filter()` runs.
+
+Latency histograms use the shared bucket list of all JBH services:
+`5ms … 10s` (11 buckets), so p95 compares across services.
+
+Env vars:
+
+| Env var | Default | Meaning |
+|---------|---------|---------|
+| `OTEL_SDK_DISABLED` | `true` | Only the exact value `false` turns the OTLP **export** on. Tracing itself is always on: trace ids, `X-Trace-Id` and `traceparent` work also with export off. |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:14317` | OTLP gRPC endpoint. IDE run: the default (Alloy's dev port). Docker: `http://jbh-alloy:4317`. |
+| `OTEL_TRACES_SAMPLER_ARG` | `1.0` | Share of new traces that are kept (parent-based). |
+| `JBH_ENV` | `local` | Metric tag `env` and resource attribute `deployment.environment.name`. |
+| `JBH_SERVICE_VERSION` | `unknown` | Resource attribute `service.version` (git SHA, set in JBH-84). |
+
+Run from the IDE with export on: set `OTEL_SDK_DISABLED=false` and start Alloy (`make local-alloy` in `jbh-deploy`).
+
+Local check:
+
+```bash
+curl -i 'http://localhost:8080/jbh-api/auth/checkEmailAvailability?email=x@y.z'   # has X-Trace-Id
+curl -s http://localhost:8080/actuator/prometheus | grep -vc '^#'                  # series count
+```
+
+Then search the `X-Trace-Id` value in Grafana (http://localhost:3000) → Explore → Tempo,
+and `{service_name="jbh-gateway"}` in Explore → Loki.
+
+Security:
+- No route may match `/actuator/**`. `/actuator/prometheus` has no JWT check (the auth filter runs only on routed
+  requests). In production it is reachable only from Docker networks, because Caddy forwards only `/jbh-api/*`.
+- Incoming `baggage` is dropped (`management.tracing.baggage.enabled: false` and the default filter
+  `RemoveRequestHeader=baggage`). An internet client must not push baggage entries into the services.
+- The client span attribute `http.uri` has no query string, so emails in query strings do not reach Tempo.
+  No token, cookie or `Authorization` header is logged or put in a span.
+
 ## Architecture
 
 ```
@@ -119,12 +175,16 @@ src/
 │   │   ├── JbhGatewayApplication.kt
 │   │   ├── config/JwtProperties.kt          # jwt.* properties
 │   │   ├── config/RateLimitConfig.kt        # IP key resolver + in-memory rate limiter
+│   │   ├── config/OpenTelemetryAppenderConfig.kt  # connects the OTel Logback appender at start
 │   │   ├── filter/AuthorizationHeaderFilter.kt  # class AuthorizationGlobalFilter
+│   │   ├── filter/TraceIdResponseFilter.kt  # X-Trace-Id on every response
 │   │   ├── model/AuthErrorCode.kt           # 401 error codes
 │   │   ├── model/AuthErrorResponse.kt       # 401 JSON body
+│   │   ├── observation/GatewayClientUriObservationFilter.kt  # no query string in client span http.uri
 │   │   └── service/JwtValidator.kt          # JWT validation
 │   └── resources/
-│       └── application.yml
+│       ├── application.yml
+│       └── logback-spring.xml               # log format per profile + OTel appender
 └── test/
     └── kotlin/com/kkpa/jbh_gateway/
         └── JbhGatewayApplicationTests.kt
