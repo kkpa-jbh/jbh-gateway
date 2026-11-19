@@ -112,6 +112,16 @@ It continues an incoming W3C `traceparent`, or starts a new trace. The whole sys
 | Logs | `traceId` / `spanId` on every line. Text locally, ECS JSON on stdout with profile `prod`. The OpenTelemetry Logback appender sends them too. | OTLP gRPC → Alloy → Loki |
 | `X-Trace-Id` | Response header on **every** response (also 401, 404, 429, 5xx). Search it in Grafana → Explore → Tempo. | the client |
 
+### How the trace id is made
+
+- **The gateway code does not make the id.** The OpenTelemetry SDK does (`micrometer-tracing-bridge-otel`).
+- **Normal app use:** the browser (Faro) makes the id and sends it in `traceparent`. The gateway keeps it.
+- **No `traceparent`** (for example `curl`): the SDK makes a new random 128-bit id (32 hex characters). No custom `IdGenerator` exists.
+- **Routed calls** get a client span with the same id. `traceparent` goes to the service.
+- **Sampling does not remove the id.** A request that is not sampled still has a trace id and `X-Trace-Id`.
+- **`X-Trace-Id`** is set by `filter/TraceIdResponseFilter.kt`. It is a `WebFilter`, so it runs also for requests with no route.
+  It reads the id in `beforeCommit`, from the server observation context, because the server span does not exist yet when `filter()` runs.
+
 Latency histograms use the shared bucket list of all JBH services:
 `5ms … 10s` (11 buckets), so p95 compares across services.
 
