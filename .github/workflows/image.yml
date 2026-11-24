@@ -27,10 +27,15 @@ on:
 # The automatic GITHUB_TOKEN gets no permission at the top. Each job asks only for what it needs.
 permissions: {}
 
-# One run at a time per branch, in push order, so an older run never moves "latest" after a newer one.
-# cancel-in-progress: false -> a running build is never stopped halfway (that could leave pushed digests with no tag).
+# One run at a time for the whole repo, in push order, so an older run never moves "latest" after a newer one.
+# - group: the workflow name only, not the branch. A run started by hand on another branch waits too.
+#   Otherwise its cleanup could delete the untagged digests of a run that has not tagged them yet.
+# - queue: max -> every waiting run stays in the queue (up to 100). The default (single) cancels a waiting run
+#   when a newer one arrives, and that commit would never get its image.
+# - cancel-in-progress: false -> a running build is never stopped halfway (that could leave pushed digests with no tag).
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}
+  queue: max
   cancel-in-progress: false
 
 jobs:
